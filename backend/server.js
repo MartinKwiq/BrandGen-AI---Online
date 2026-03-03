@@ -556,11 +556,12 @@ if (isProduction) {
     const distPath = path.join(__dirname, '..', 'dist');
     app.use(express.static(distPath));
     // Cualquier ruta que no sea /api/* devuelve el index.html del frontend
-    app.get('/*', (req, res) => {
+    app.use((req, res, next) => {
         if (!req.path.startsWith('/api')) {
             res.sendFile(path.join(distPath, 'index.html'));
         } else {
-            res.status(404).json({ error: 'Not found' });
+            // Si es una ruta /api/* que no existe, pasamos al siguiente manejador o devolvemos 404
+            res.status(404).json({ error: 'Endpoint no encontrado' });
         }
     });
     console.log(`📁 Sirviendo frontend estático desde: ${distPath}`);
