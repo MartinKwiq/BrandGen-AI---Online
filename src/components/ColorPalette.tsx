@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { cn } from '../utils/cn';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface ColorPaletteProps {
   colors: { name: string; hex: string; usage: string }[];
@@ -9,6 +10,7 @@ interface ColorPaletteProps {
 
 export function ColorPalette({ colors, selected, onSelect }: ColorPaletteProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const { t } = useTranslation();
 
   const copyToClipboard = (hex: string, index: number) => {
     navigator.clipboard.writeText(hex);
@@ -25,7 +27,7 @@ export function ColorPalette({ colors, selected, onSelect }: ColorPaletteProps) 
             onClick={() => onSelect?.(index)}
             className={cn(
               'group relative rounded-xl overflow-hidden shadow-md transition-all hover:scale-105 cursor-pointer',
-              selected === index && 'ring-4 ring-violet-500 ring-offset-2'
+              selected === index && 'ring-4 ring-cyan-500 ring-offset-2'
             )}
           >
             <div
@@ -40,7 +42,7 @@ export function ColorPalette({ colors, selected, onSelect }: ColorPaletteProps) 
                 className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors"
               >
                 <span className="opacity-0 group-hover:opacity-100 bg-white/90 px-2 py-1 rounded-lg text-xs font-medium shadow-lg transition-opacity">
-                  {copiedIndex === index ? '¡Copiado!' : 'Copiar'}
+                  {copiedIndex === index ? t('colorPalette', 'copied') : t('colorPalette', 'copy')}
                 </span>
               </button>
             </div>

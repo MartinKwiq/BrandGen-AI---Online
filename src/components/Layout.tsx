@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { cn } from '../utils/cn';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface LayoutProps {
   children: ReactNode;
@@ -27,11 +28,12 @@ interface SidebarProps {
 
 export function Sidebar({ children, activeView, onViewChange, onNewProject, theme = 'light' }: SidebarProps) {
   const isDark = theme === 'dark';
-  
+  const { t } = useTranslation();
+
   const navItems = [
-    { id: 'projects', label: 'Proyectos', icon: '📁' },
-    { id: 'new', label: 'Nuevo', icon: '➕', action: onNewProject },
-    { id: 'settings', label: 'Ajustes', icon: '⚙️' },
+    { id: 'projects', label: t('sidebar', 'projects'), icon: '📁' },
+    { id: 'new', label: t('sidebar', 'new'), icon: '➕', action: onNewProject },
+    { id: 'settings', label: t('sidebar', 'settings'), icon: '⚙️' },
   ];
 
   return (
@@ -47,16 +49,11 @@ export function Sidebar({ children, activeView, onViewChange, onNewProject, them
           isDark ? 'border-slate-700' : 'border-slate-200'
         )}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                <line x1="9" y1="9" x2="9.01" y2="9" />
-                <line x1="15" y1="9" x2="15.01" y2="9" />
-              </svg>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-pink-600 flex items-center justify-center">
+              <span className="text-white font-bold text-xl font-serif">K</span>
             </div>
             <div>
-              <h1 className={cn("font-bold", isDark ? 'text-white' : 'text-slate-900')}>BrandGen</h1>
+              <h1 className={cn("font-bold", isDark ? 'text-white' : 'text-slate-900')}>Quick Branding</h1>
               <p className="text-xs text-slate-500">AI Branding</p>
             </div>
           </div>
@@ -71,9 +68,9 @@ export function Sidebar({ children, activeView, onViewChange, onNewProject, them
               className={cn(
                 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors',
                 activeView === item.id
-                  ? 'bg-violet-50 text-violet-700 font-medium'
-                  : isDark 
-                    ? 'text-slate-300 hover:bg-slate-700' 
+                  ? 'bg-cyan-50 text-cyan-700 font-medium'
+                  : isDark
+                    ? 'text-slate-300 hover:bg-slate-700'
                     : 'text-slate-600 hover:bg-slate-50'
               )}
             >
@@ -90,10 +87,10 @@ export function Sidebar({ children, activeView, onViewChange, onNewProject, them
         )}>
           <div className={cn(
             "rounded-xl p-4",
-            isDark ? 'bg-slate-700' : 'bg-gradient-to-r from-violet-50 to-indigo-50'
+            isDark ? 'bg-slate-700' : 'bg-gradient-to-r from-cyan-50 to-pink-50'
           )}>
-            <p className={cn("text-sm font-medium", isDark ? 'text-white' : 'text-slate-900')}>¿Necesitas ayuda?</p>
-            <p className="text-xs text-slate-500 mt-1">Consulta la documentación</p>
+            <p className={cn("text-sm font-medium", isDark ? 'text-white' : 'text-slate-900')}>{t('sidebar', 'help')}</p>
+            <p className="text-xs text-slate-500 mt-1">{t('sidebar', 'docs')}</p>
           </div>
         </div>
       </aside>
@@ -115,7 +112,7 @@ interface HeaderProps {
 
 export function Header({ title, subtitle, actions, theme = 'light' }: HeaderProps) {
   const isDark = theme === 'dark';
-  
+
   return (
     <header className={cn(
       "px-8 py-6 border-b transition-colors duration-300",

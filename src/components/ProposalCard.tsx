@@ -16,13 +16,13 @@ export function ProposalCard({ proposal, isSelected, onSelect, isCurrent }: Prop
       className={cn(
         'group relative bg-white rounded-2xl overflow-hidden cursor-pointer transition-all duration-300',
         isSelected 
-          ? 'ring-4 ring-violet-500 shadow-xl transform scale-[1.02]' 
-          : 'hover:shadow-lg border border-slate-200 hover:border-violet-300'
+          ? 'ring-4 ring-cyan-500 shadow-xl transform scale-[1.02]' 
+          : 'hover:shadow-lg border border-slate-200 hover:border-cyan-300'
       )}
     >
       {isCurrent && (
         <div className="absolute top-3 right-3 z-10">
-          <span className="px-3 py-1 bg-violet-600 text-white text-xs font-semibold rounded-full shadow-lg">
+          <span className="px-3 py-1 bg-cyan-600 text-white text-xs font-semibold rounded-full shadow-lg">
             ✨ Activa
           </span>
         </div>
@@ -38,7 +38,7 @@ export function ProposalCard({ proposal, isSelected, onSelect, isCurrent }: Prop
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-lg text-slate-900 group-hover:text-violet-700 transition-colors">
+            <h3 className="font-bold text-lg text-slate-900 group-hover:text-cyan-700 transition-colors">
               {proposal.name}
             </h3>
             <p className="text-sm text-slate-500 capitalize">{proposal.mood}</p>
@@ -105,7 +105,7 @@ export function ProposalDetail({ proposal, brandName }: ProposalDetailProps) {
         <h2 className="text-2xl font-bold text-slate-900 mb-2">{proposal.name}</h2>
         <p className="text-slate-600">{proposal.description}</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="px-3 py-1 bg-violet-100 text-violet-700 text-sm rounded-full capitalize">
+          <span className="px-3 py-1 bg-cyan-100 text-cyan-700 text-sm rounded-full capitalize">
             {proposal.mood}
           </span>
           <span className="px-3 py-1 bg-slate-100 text-slate-700 text-sm rounded-full">

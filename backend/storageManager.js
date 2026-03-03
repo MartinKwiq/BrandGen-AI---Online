@@ -63,10 +63,17 @@ export async function saveProject(project) {
         }
     }
 
-    // Guardar el JSON del proyecto
+    // Analizar si ya existe para preservar createdAt
     const projectFilePath = path.join(projectDir, "project.json");
+    let existingData = {};
+    if (await fs.pathExists(projectFilePath)) {
+        existingData = await fs.readJson(projectFilePath);
+    }
+
+    // Guardar el JSON del proyecto
     await fs.writeJson(projectFilePath, {
         ...project,
+        createdAt: existingData.createdAt || existingData.updatedAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
     }, { spaces: 2 });
 
@@ -127,6 +134,45 @@ export async function deleteProject(id) {
     } catch (error) {
         console.error(`❌ Error eliminando proyecto local ${id}:`, error);
         return false;
+    }
+}
+
+/**
+ * Rutina para limpiar proyectos antiguos (por defecto 10 días).
+ */
+export async function cleanupOldProjects(days = 10) {
+    try {
+        if (!(await fs.pathExists(STORAGE_DIR))) return;
+        const items = await fs.readdir(STORAGE_DIR);
+        const threshold = Date.now() - (days * 24 * 60 * 60 * 1000);
+        let deletedCount = 0;
+
+        for (const item of items) {
+            const projectDir = path.join(STORAGE_DIR, item);
+            const projectFile = path.join(projectDir, "project.json");
+
+            if (await fs.pathExists(projectFile)) {
+                const projectData = await fs.readJson(projectFile);
+                const projectTime = new Date(projectData.createdAt || projectData.updatedAt || 0).getTime();
+                if (projectTime < threshold) {
+                    await fs.remove(projectDir);
+                    deletedCount++;
+                    console.log(`🧹 Eliminado proyecto antiguo (> ${days} días): ${item}`);
+                }
+            } else {
+                const stat = await fs.stat(projectDir);
+                if (stat.mtimeMs < threshold) {
+                    await fs.remove(projectDir);
+                    deletedCount++;
+                    console.log(`🧹 Eliminada carpeta huérfana antigua: ${item}`);
+                }
+            }
+        }
+        if (deletedCount > 0) {
+            console.log(`✅ Limpieza automática completada: ${deletedCount} directorios eliminados.`);
+        }
+    } catch (error) {
+        console.error("❌ Error limpiando proyectos antiguos:", error);
     }
 }
 

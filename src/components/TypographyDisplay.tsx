@@ -4,19 +4,21 @@ interface TypographyDisplayProps {
     body: { name: string; fontFamily: string; usage: string; googleFont: string };
   };
 }
+import { useTranslation } from '../hooks/useTranslation';
 
 export function TypographyDisplay({ typography }: TypographyDisplayProps) {
+  const { t } = useTranslation();
   return (
     <div className="grid md:grid-cols-2 gap-6">
       {/* Heading Font */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
         <div className="flex items-center gap-2 mb-4">
-          <span className="px-2 py-1 bg-violet-100 text-violet-700 text-xs font-medium rounded-lg">Títulos</span>
+          <span className="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-lg">{t('typographyDisplay', 'headers')}</span>
         </div>
 
         <div className="space-y-4">
           <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Preview</p>
+            <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">{t('typographyDisplay', 'preview')}</p>
             <p
               className="text-2xl font-bold text-slate-900 leading-tight overflow-hidden break-words"
               style={{ fontFamily: typography.heading.fontFamily }}
@@ -47,12 +49,12 @@ export function TypographyDisplay({ typography }: TypographyDisplayProps) {
       {/* Body Font */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
         <div className="flex items-center gap-2 mb-4">
-          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-lg">Cuerpo</span>
+          <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-lg">{t('typographyDisplay', 'body')}</span>
         </div>
 
         <div className="space-y-4">
           <div>
-            <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Preview</p>
+            <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">{t('typographyDisplay', 'preview')}</p>
             <p
               className="text-base text-slate-700 leading-relaxed"
               style={{ fontFamily: typography.body.fontFamily }}
@@ -94,32 +96,33 @@ interface TypographyComparisonProps {
 }
 
 export function TypographyComparison({ typography, title }: TypographyComparisonProps) {
+  const { t } = useTranslation();
   return (
     <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
       {title && <h3 className="text-lg font-semibold text-slate-800 mb-4">{title}</h3>}
       <div className="grid md:grid-cols-2 gap-8">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <span className="px-2 py-1 bg-violet-100 text-violet-700 text-xs font-medium rounded-lg">Títulos</span>
+            <span className="px-2 py-1 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-lg">{t('typographyDisplay', 'headers')}</span>
             <span className="text-sm text-slate-600">{typography.heading.name}</span>
           </div>
           <p
             className="text-3xl font-bold text-slate-900"
             style={{ fontFamily: typography.heading.fontFamily }}
           >
-            El veloz murciélago hindú
+            {t('typographyDisplay', 'sampleHeader')}
           </p>
         </div>
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-lg">Texto</span>
+            <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-medium rounded-lg">{t('typographyDisplay', 'text')}</span>
             <span className="text-sm text-slate-600">{typography.body.name}</span>
           </div>
           <p
             className="text-base text-slate-600 leading-relaxed"
             style={{ fontFamily: typography.body.fontFamily }}
           >
-            La cigüeña tocaba un saxofón detrás del palenque de paja.
+            {t('typographyDisplay', 'sampleBody')}
           </p>
         </div>
       </div>

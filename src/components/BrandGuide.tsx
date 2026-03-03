@@ -5,6 +5,7 @@ import { TypographyDisplay } from './TypographyDisplay';
 import { IconSet } from './IconDisplay';
 import type { BrandBranding } from '../types';
 import { useBrand } from '../context/BrandContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface BrandGuideProps {
   branding: BrandBranding;
@@ -17,15 +18,15 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
   const { currentProject, updateProject } = useBrand();
   const [activeSection, setActiveSection] = useState('overview');
   const [showExportModal, setShowExportModal] = useState(false);
-
+  const { t } = useTranslation();
 
   const sections = [
-    { id: 'overview', label: 'Resumen', icon: '📋' },
-    { id: 'logo', label: 'Logo', icon: '🎨' },
-    { id: 'colors', label: 'Colores', icon: '🎭' },
-    { id: 'typography', label: 'Tipografía', icon: '✍️' },
-    { id: 'icons', label: 'Iconos', icon: '⬡' },
-    { id: 'mixer', label: 'Personalizar Mix', icon: '⚙️' },
+    { id: 'overview', label: t('brandGuide', 'tabs.overview'), icon: '📋' },
+    { id: 'logo', label: t('brandGuide', 'tabs.logo'), icon: '🎨' },
+    { id: 'colors', label: t('brandGuide', 'tabs.colors'), icon: '🎭' },
+    { id: 'typography', label: t('brandGuide', 'tabs.typography'), icon: '✍️' },
+    { id: 'icons', label: t('brandGuide', 'tabs.icons'), icon: '⬡' },
+    { id: 'mixer', label: t('brandGuide', 'tabs.mixer'), icon: '⚙️' },
   ];
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
         return (
           <div className="space-y-6 animate-fade-in">
             {/* Brand Header */}
-            <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-8 text-white">
+            <div className="bg-gradient-to-r from-cyan-600 to-pink-600 rounded-2xl p-8 text-white">
               <div className="flex items-center gap-6">
                 {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
                   <img
@@ -105,7 +106,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                     onClick={() => {
                       setActiveSection('mixer');
                     }}
-                    className="p-3 rounded-xl border border-slate-200 hover:border-violet-500 hover:shadow-md cursor-pointer transition-all"
+                    className="p-3 rounded-xl border border-slate-200 hover:border-cyan-500 hover:shadow-md cursor-pointer transition-all"
                   >
                     <div className="flex -space-x-1 mb-2">
                       {p.colorScheme.slice(0, 3).map((c, i) => (
@@ -157,7 +158,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                           link.click();
                         }
                       }}
-                      className="flex-1 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      className="flex-1 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors"
                     >
                       Descargar PNG
                     </button>
@@ -402,7 +403,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         className={cn(
                           "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
                           branding.selectedComponents?.colorProposalId === p.id
-                            ? "border-violet-500 bg-violet-50"
+                            ? "border-cyan-500 bg-cyan-50"
                             : "border-slate-100 hover:border-slate-300"
                         )}
                       >
@@ -415,7 +416,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                           </div>
                         </div>
                         {branding.selectedComponents?.colorProposalId === p.id && (
-                          <span className="text-violet-600">✓</span>
+                          <span className="text-cyan-600">✓</span>
                         )}
                       </button>
                     ))}
@@ -446,7 +447,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         className={cn(
                           "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
                           branding.selectedComponents?.typographyProposalId === p.id
-                            ? "border-violet-500 bg-violet-50"
+                            ? "border-cyan-500 bg-cyan-50"
                             : "border-slate-100 hover:border-slate-300"
                         )}
                       >
@@ -455,7 +456,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                           <p className="text-sm font-medium mt-1 truncate">{p.typography.titulo}</p>
                         </div>
                         {branding.selectedComponents?.typographyProposalId === p.id && (
-                          <span className="text-violet-600">✓</span>
+                          <span className="text-cyan-600">✓</span>
                         )}
                       </button>
                     ))}
@@ -486,7 +487,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         className={cn(
                           "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
                           branding.selectedComponents?.moodProposalId === p.id
-                            ? "border-violet-500 bg-violet-50"
+                            ? "border-cyan-500 bg-cyan-50"
                             : "border-slate-100 hover:border-slate-300"
                         )}
                       >
@@ -495,7 +496,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                           <p className="text-sm font-medium mt-1 capitalize">{p.mood}</p>
                         </div>
                         {branding.selectedComponents?.moodProposalId === p.id && (
-                          <span className="text-violet-600">✓</span>
+                          <span className="text-cyan-600">✓</span>
                         )}
                       </button>
                     ))}
@@ -573,7 +574,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 onClick={() => setActiveSection('overview')}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-pink-600 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M8 14s1.5 2 4 2 4-2 4-2" />
@@ -587,14 +588,14 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
 
             <button
               onClick={() => setShowExportModal(true)}
-              className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              Exportar Branding
+              {t('brandGuide', 'exportBranding')}
             </button>
           </div>
         </div>
@@ -611,7 +612,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 className={cn(
                   'px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap',
                   activeSection === section.id
-                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-200'
+                    ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-200'
                     : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                 )}
               >
@@ -630,7 +631,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
       {showExportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-scale-in">
-            <h3 className="text-xl font-bold text-slate-900 mb-4">📥 Exportar Branding</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-4">📥 {t('brandGuide', 'exportBranding')}</h3>
             <p className="text-slate-600 mb-6">
               Descarga tu guía de marca completa en el formato que prefieras.
             </p>
@@ -641,7 +642,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                     window.open(`${BACKEND_URL}/api/projects/${projectId}/export/pdf`, '_blank');
                   }
                 }}
-                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-violet-500 hover:bg-violet-50 transition-all flex items-center gap-3"
+                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-cyan-500 hover:bg-cyan-50 transition-all flex items-center gap-3"
               >
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
                   <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -650,7 +651,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-slate-900">PDF</p>
+                  <p className="font-medium text-slate-900">{t('brandGuide', 'downloadPdf')}</p>
                   <p className="text-sm text-slate-500">Documento profesional de marca</p>
                 </div>
               </button>
@@ -660,7 +661,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                     window.open(`${BACKEND_URL}/api/projects/${projectId}/export/contents`, '_blank');
                   }
                 }}
-                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-violet-500 hover:bg-violet-50 transition-all flex items-center gap-3"
+                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-cyan-500 hover:bg-cyan-50 transition-all flex items-center gap-3"
               >
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                   <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -670,7 +671,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="font-medium text-slate-900">ZIP de Contenidos</p>
+                  <p className="font-medium text-slate-900">{t('brandGuide', 'downloadZip')}</p>
                   <p className="text-sm text-slate-500">Logotipo e iconos PNG</p>
                 </div>
               </button>
@@ -679,7 +680,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
               onClick={() => setShowExportModal(false)}
               className="mt-4 w-full px-4 py-2 text-slate-500 hover:text-slate-700 transition-colors"
             >
-              Cancelar
+              {t('brandGuide', 'cancel')}
             </button>
           </div>
         </div>

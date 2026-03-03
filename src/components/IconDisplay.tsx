@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { BrandIcon } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -11,6 +12,7 @@ interface IconLightboxProps {
 }
 
 function IconLightbox({ icon, color, onClose }: IconLightboxProps) {
+  const { t } = useTranslation();
   const imgSrc = icon.svg.startsWith('/') ? `${BACKEND_URL}${icon.svg}` : icon.svg;
   const isImage = icon.svg.startsWith('/') || icon.svg.startsWith('http') || icon.svg.startsWith('data:');
 
@@ -83,20 +85,20 @@ function IconLightbox({ icon, color, onClose }: IconLightboxProps) {
         <div className="flex gap-3 w-full">
           <button
             onClick={handleDownload}
-            className="flex-1 py-3 px-4 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-3 px-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Descargar
+            {t('iconDisplay', 'download')}
           </button>
           <button
             onClick={onClose}
             className="py-3 px-4 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-semibold transition-colors"
           >
-            Cerrar
+            {t('iconDisplay', 'close')}
           </button>
         </div>
       </div>
@@ -120,6 +122,7 @@ interface IconSetProps {
 
 export function IconSet({ icons, color = '#6366f1', size = 48 }: IconSetProps) {
   const [selectedIcon, setSelectedIcon] = useState<BrandIcon | null>(null);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -129,10 +132,10 @@ export function IconSet({ icons, color = '#6366f1', size = 48 }: IconSetProps) {
             key={index}
             className="group flex flex-col items-center p-4 bg-white rounded-2xl shadow-md hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer"
             onClick={() => setSelectedIcon(icon)}
-            title={`Clic para ampliar ${icon.name}`}
+            title={`${t('iconDisplay', 'clickToExpand')}: ${icon.name}`}
           >
             <div
-              className="p-3 rounded-xl bg-slate-50 group-hover:bg-violet-50 transition-colors flex items-center justify-center"
+              className="p-3 rounded-xl bg-slate-50 group-hover:bg-cyan-50 transition-colors flex items-center justify-center"
               style={{ width: size + 16, height: size + 16 }}
             >
               {icon.svg.startsWith('/') || icon.svg.startsWith('http') || icon.svg.startsWith('data:') ? (
@@ -186,7 +189,7 @@ export function IconGrid({ icons, color = '#6366f1' }: IconGridProps) {
         {icons.map((icon, index) => (
           <div
             key={index}
-            className="flex flex-col items-center p-3 bg-slate-50 rounded-xl hover:bg-violet-50 transition-colors cursor-pointer"
+            className="flex flex-col items-center p-3 bg-slate-50 rounded-xl hover:bg-cyan-50 transition-colors cursor-pointer"
             onClick={() => setSelectedIcon(icon)}
           >
             {icon.svg.startsWith('/') || icon.svg.startsWith('http') || icon.svg.startsWith('data:') ? (
@@ -266,12 +269,13 @@ interface IconShowcaseProps {
 
 export function IconShowcase({ icons, title, color = '#6366f1' }: IconShowcaseProps) {
   const [selectedIcon, setSelectedIcon] = useState<BrandIcon | null>(null);
+  const { t } = useTranslation();
 
   if (!icons || icons.length === 0) {
     return (
       <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
         <h3 className="text-lg font-semibold text-slate-800 mb-4">{title || 'Iconos'}</h3>
-        <p className="text-slate-500 text-center py-8">No hay iconos disponibles</p>
+        <p className="text-slate-500 text-center py-8">{t('iconDisplay', 'noIcons')}</p>
       </div>
     );
   }
@@ -284,9 +288,9 @@ export function IconShowcase({ icons, title, color = '#6366f1' }: IconShowcasePr
           {icons.map((icon, index) => (
             <div
               key={index}
-              className="flex flex-col items-center p-4 bg-slate-50 rounded-xl hover:bg-violet-50 hover:shadow-md transition-all cursor-pointer group"
+              className="flex flex-col items-center p-4 bg-slate-50 rounded-xl hover:bg-cyan-50 hover:shadow-md transition-all cursor-pointer group"
               onClick={() => setSelectedIcon(icon)}
-              title={`Clic para ampliar: ${icon.name}`}
+              title={`${t('iconDisplay', 'clickToExpand')}: ${icon.name}`}
             >
               {icon.svg.startsWith('/') || icon.svg.startsWith('http') || icon.svg.startsWith('data:') ? (
                 <img

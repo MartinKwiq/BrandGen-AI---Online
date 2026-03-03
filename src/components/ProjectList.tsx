@@ -1,5 +1,6 @@
 import { cn } from '../utils/cn';
 import type { BrandProject } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface ProjectCardProps {
   project: BrandProject;
@@ -9,6 +10,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, isSelected, onSelect, onDelete }: ProjectCardProps) {
+  const { t, lang } = useTranslation();
   const statusColors = {
     draft: 'bg-yellow-100 text-yellow-700',
     generating: 'bg-blue-100 text-blue-700',
@@ -17,10 +19,10 @@ export function ProjectCard({ project, isSelected, onSelect, onDelete }: Project
   };
 
   const statusLabels = {
-    draft: 'Borrador',
-    generating: 'Generando',
-    completed: 'Completado',
-    exported: 'Exportado',
+    draft: t('projectList', 'draft'),
+    generating: t('projectList', 'generating'),
+    completed: t('projectList', 'completed'),
+    exported: t('projectList', 'exported'),
   };
 
   return (
@@ -29,7 +31,7 @@ export function ProjectCard({ project, isSelected, onSelect, onDelete }: Project
       className={cn(
         'group relative p-4 rounded-xl cursor-pointer transition-all duration-200',
         isSelected
-          ? 'bg-violet-50 border-2 border-violet-500 shadow-md'
+          ? 'bg-cyan-50 border-2 border-cyan-500 shadow-md'
           : 'bg-white border-2 border-transparent hover:bg-slate-50 hover:border-slate-200 shadow-sm'
       )}
     >
@@ -38,7 +40,7 @@ export function ProjectCard({ project, isSelected, onSelect, onDelete }: Project
           <h3 className="font-semibold text-slate-900 truncate">{project.name}</h3>
           <p className="text-sm text-slate-500 line-clamp-2 mt-1">{project.description}</p>
         </div>
-        
+
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -58,7 +60,7 @@ export function ProjectCard({ project, isSelected, onSelect, onDelete }: Project
           {statusLabels[project.status]}
         </span>
         <span className="text-xs text-slate-400">
-          {new Date(project.updatedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+          {new Date(project.updatedAt).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
         </span>
       </div>
 
@@ -86,6 +88,8 @@ interface ProjectListProps {
 }
 
 export function ProjectList({ projects, selectedId, onSelect, onDelete }: ProjectListProps) {
+  const { t } = useTranslation();
+
   if (projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -94,8 +98,8 @@ export function ProjectList({ projects, selectedId, onSelect, onDelete }: Projec
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
           </svg>
         </div>
-        <p className="text-slate-500 font-medium">No hay proyectos aún</p>
-        <p className="text-slate-400 text-sm mt-1">Crea tu primer proyecto de branding</p>
+        <p className="text-slate-500 font-medium">{t('projectList', 'noProjects')}</p>
+        <p className="text-slate-400 text-sm mt-1">{t('projectList', 'createFirst')}</p>
       </div>
     );
   }

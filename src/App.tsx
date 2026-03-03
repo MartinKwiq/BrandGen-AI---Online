@@ -6,29 +6,31 @@ import { NewProjectModal, WelcomeScreen } from './components/NewProjectModal';
 import { Settings } from './components/Settings';
 import { ProjectList } from './components/ProjectList';
 import { LoadingOverlay } from './components/LoadingOverlay';
+import { isAIInitialized } from './services/brandingService';
+import { SettingsProvider, useSettings } from './context/SettingsContext';
+import { useTranslation } from './hooks/useTranslation';
 import { cn } from './utils/cn';
 import type { AppSettings } from './types';
-import { isAIInitialized } from './services/brandingService';
-
-const defaultSettings: AppSettings = {
-  openaiApiKey: '',
-  theme: 'light',
-  language: 'es',
-  webhooks: [],
-};
 
 function AppContent() {
   const [view, setView] = useState<'projects' | 'chat' | 'guide' | 'settings'>('projects');
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [aiStatus, setAiStatus] = useState(false);
-  const [settings, setSettings] = useState<AppSettings>(() => {
-    try {
-      const saved = localStorage.getItem('brandgen_settings');
-      return saved ? JSON.parse(saved) : defaultSettings;
-    } catch {
-      return defaultSettings;
-    }
-  });
+  const { settings, updateSettings } = useSettings();
+  const { t } = useTranslation();
+
+  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => setSystemTheme(e.matches ? 'dark' : 'light');
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  const resolvedTheme = settings.theme === 'system' ? systemTheme : settings.theme;
 
   const {
     projects,
@@ -76,13 +78,9 @@ function AppContent() {
   };
 
   const handleUpdateSettings = (newSettings: Partial<AppSettings>) => {
-    setSettings(prev => {
-      const updated = { ...prev, ...newSettings };
-      localStorage.setItem('brandgen_settings', JSON.stringify(updated));
-      return updated;
-    });
+    updateSettings(newSettings);
     // Check AI status after updating
-    if (newSettings.openaiApiKey) {
+    if (newSettings.openaiApiKey !== undefined) {
       setTimeout(() => setAiStatus(isAIInitialized()), 100);
     }
   };
@@ -101,28 +99,28 @@ function AppContent() {
 
   // Effect to apply dark mode based on settings
   useEffect(() => {
-    if (settings.theme === 'dark') {
+    if (resolvedTheme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [settings.theme]);
+  }, [resolvedTheme]);
 
   // Render project list view (sidebar)
   const renderProjectList = () => (
     <div className={cn(
       "w-80 border-r flex flex-col h-full z-10 transition-colors duration-300",
-      settings.theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+      resolvedTheme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
     )}>
       <div className="p-4 border-b border-slate-200">
         <button
           onClick={() => setShowNewProjectModal(true)}
-          className="w-full px-4 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12h14" />
           </svg>
-          Nuevo Proyecto
+          {t('sidebar', 'new')} {t('sidebar', 'projects')}
         </button>
       </div>
 
@@ -138,14 +136,14 @@ function AppContent() {
       <div className="p-4 border-t border-slate-200 bg-slate-50">
         <button
           onClick={() => setView('settings')}
-          className={`w-full px-4 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${view === 'settings' ? 'bg-violet-100 text-violet-700' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+          className={`w-full px-4 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${view === 'settings' ? 'bg-cyan-100 text-cyan-700' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
             }`}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
-          Configuración
+          {t('sidebar', 'settings')}
         </button>
       </div>
     </div>
@@ -157,12 +155,9 @@ function AppContent() {
       return (
         <div className={cn(
           "p-8 overflow-y-auto h-full scrollbar-thin",
-          settings.theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'
+          resolvedTheme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'
         )}>
           <Settings
-            settings={settings}
-            onUpdate={handleUpdateSettings}
-            aiStatus={aiStatus}
             onBack={() => setView('projects')}
           />
         </div>
@@ -208,7 +203,7 @@ function AppContent() {
                     onClick={() => setView('guide')}
                     className="px-4 py-2.5 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-medium transition-colors"
                   >
-                    Ver Guía
+                    {t('chat', 'viewGuide')}
                   </button>
                 )}
               </div>
@@ -229,12 +224,12 @@ function AppContent() {
                 <div className="flex-1">
                   <p className="text-sm text-yellow-800 font-medium">API Key no configurada</p>
                   <p className="text-xs text-yellow-700 mt-1">
-                    Para generar logos e iconos profesionales, configura tu API Key de Google AI Studio en{' '}
+                    {t('chat', 'apiKeyMissing')}{' '}
                     <button
                       onClick={() => setView('settings')}
                       className="underline font-medium hover:text-yellow-900"
                     >
-                      Ajustes → API
+                      {t('chat', 'settingsLink')}
                     </button>
                   </p>
                 </div>
@@ -259,22 +254,22 @@ function AppContent() {
 
         {/* Sidebar with project info */}
         <div className="w-80 bg-white border-l border-slate-200 p-4 overflow-y-auto scrollbar-thin">
-          <h3 className="font-semibold text-slate-900 mb-4">Información del Proyecto</h3>
+          <h3 className="font-semibold text-slate-900 mb-4">{t('chat', 'projectInfo')}</h3>
 
           <div className="space-y-4">
             <div className="p-4 bg-slate-50 rounded-xl">
-              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Estado</p>
+              <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">{t('chat', 'status')}</p>
               <p className="font-medium text-slate-900 capitalize">
-                {currentProject.status === 'draft' ? 'Borrador' :
-                  currentProject.status === 'generating' ? 'Generando' :
-                    currentProject.status === 'completed' ? 'Completado' : 'Exportado'}
+                {currentProject.status === 'draft' ? t('projectList', 'draft') :
+                  currentProject.status === 'generating' ? t('projectList', 'generating') :
+                    currentProject.status === 'completed' ? t('projectList', 'completed') : t('projectList', 'exported')}
               </p>
             </div>
 
             {currentProject.branding && (
               <>
                 <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Colores</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">{t('chat', 'colors')}</p>
                   <div className="flex -space-x-2">
                     {currentProject.branding.colors.map((c, i) => (
                       <div
@@ -288,7 +283,7 @@ function AppContent() {
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl">
-                  <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">Tipografía</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-wide mb-2">{t('chat', 'typography')}</p>
                   <p className="font-medium text-slate-900 text-sm">
                     {currentProject.branding.typography.heading.name}
                   </p>
@@ -312,7 +307,7 @@ function AppContent() {
                 }}
                 className="w-full px-4 py-2 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors text-sm"
               >
-                ← Volver a proyectos
+                {t('chat', 'backToProjects')}
               </button>
             </div>
           </div>
@@ -347,8 +342,10 @@ function AppContent() {
 
 export function App() {
   return (
-    <BrandProvider>
-      <AppContent />
-    </BrandProvider>
+    <SettingsProvider>
+      <BrandProvider>
+        <AppContent />
+      </BrandProvider>
+    </SettingsProvider>
   );
 }

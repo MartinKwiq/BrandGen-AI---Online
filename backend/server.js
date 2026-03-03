@@ -370,112 +370,126 @@ app.get("/api/projects/:id/export/pdf", async (req, res) => {
         }
 
         const doc = new PDFDocument({
-            margin: 50,
+            margin: 0,
             size: 'A4',
-            info: { Title: `Brand Guide - ${branding.brandName}`, Author: 'BrandGen AI' }
+            info: { Title: `Brand Book - ${branding.brandName}`, Author: 'Quick Branding' }
         });
 
-        const filename = `Branding_${branding.brandName.replace(/\s+/g, '_')}.pdf`;
+        const filename = `BrandBook_${branding.brandName.replace(/\s+/g, '_')}.pdf`;
 
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", `attachment; filename=${filename}`);
 
         doc.pipe(res);
 
-        // --- PORTADA ---
-        const primaryColor = currentColors[0]?.hex || "#6366f1";
-        doc.rect(0, 0, doc.page.width, 300).fill(primaryColor);
-        doc.fillColor("white").fontSize(40).text(branding.brandName, 50, 120);
-        doc.fontSize(18).text(branding.tagline || "", 50, 175);
-        doc.fontSize(10).text(`Guía de Identidad Visual • ${new Date().toLocaleDateString()}`, 50, 260);
+        const primaryColor = currentColors[0]?.hex || "#06b6d4";
+        const secondaryColor = currentColors[1]?.hex || "#db2777";
+        const width = doc.page.width;
+        const height = doc.page.height;
 
-        // --- SECCIÓN 1: LOGOTIPO ---
-        doc.fillColor("black").fontSize(20).text("1. Logotipo Principal", 50, 340);
-        doc.moveTo(50, 365).lineTo(550, 365).stroke("#eeeeee");
-
-        if (currentLogo) {
+        // Función Helper para imagen local
+        const addImageLocal = (src, x, y, opts) => {
+            if (!src) return false;
             try {
-                if (currentLogo.startsWith("data:image")) {
-                    doc.image(currentLogo, 50, 390, { fit: [200, 200] });
-                } else {
-                    const logoFileName = currentLogo.split("/").pop();
-                    const logoPath = storage.getImagePhysicalPath(project.id, logoFileName);
-                    if (fs.existsSync(logoPath)) {
-                        doc.image(logoPath, 50, 390, { fit: [200, 200] });
+                if (src.startsWith("data:image")) {
+                    doc.image(src, x, y, opts);
+                    return true;
+                } else if (!src.startsWith("<svg")) {
+                    const fileName = src.split("/").pop();
+                    const filePath = storage.getImagePhysicalPath(project.id, fileName);
+                    if (fs.existsSync(filePath)) {
+                        doc.image(filePath, x, y, opts);
+                        return true;
                     }
                 }
             } catch (e) {
-                console.error("Error embedding logo in PDF:", e);
-                doc.fontSize(10).fillColor("#999999").text("[Imagen del logotipo no disponible]", 50, 390);
+                console.error("Error embed image PDF:", e);
             }
-        }
+            return false;
+        };
 
-        // --- SECCIÓN 2: PALETA DE COLORES ---
-        doc.addPage();
-        doc.fillColor("black").fontSize(20).text("2. Paleta de Colores", 50, 50);
-        doc.moveTo(50, 75).lineTo(550, 75).stroke("#eeeeee");
+        // --- PÁGINA 1: PORTADA ---
+        doc.rect(0, 0, width, height).fill(primaryColor);
+        doc.fillColor("white").font("Helvetica-Bold").fontSize(50).text(branding.brandName.toUpperCase(), 50, height / 2 - 50, { align: 'center', width: width - 100 });
+        doc.font("Helvetica").fontSize(20).text(branding.tagline || "Brand Guidelines", 50, height / 2 + 20, { align: 'center', width: width - 100 });
+        doc.fontSize(12).text(`Creado por Quick Branding • ${new Date().toLocaleDateString()}`, 50, height - 80, { align: 'center', width: width - 100 });
+
+        // --- PÁGINA 2: LOGOTIPO ---
+        doc.addPage({ margin: 50 });
+        doc.rect(0, 0, width, 120).fill("#1e293b"); // Header oscuro
+        doc.fillColor("white").font("Helvetica-Bold").fontSize(28).text("01. Identidad Primaria", 50, 50);
+
+        doc.fillColor("#333333").font("Helvetica-Bold").fontSize(18).text("Logotipo Principal", 50, 160);
+        doc.font("Helvetica").fontSize(11).fillColor("#666666").text("El logotipo es el elemento visual principal de la marca. Debe respetarse su área de resguardo y proporciones.", 50, 185, { width: 400 });
+
+        doc.rect(50, 230, width - 100, 300).fill("#f8fafc").stroke();
+        const logoAdded = addImageLocal(currentLogo, 50, 230, { fit: [width - 100, 300], align: 'center', valign: 'center' });
+        if (!logoAdded) doc.fillColor("#94a3b8").fontSize(14).text("[Logo no disponible]", 50, 370, { align: 'center', width: width - 100 });
+
+        // --- PÁGINA 3: SISTEMA DE COLOR ---
+        doc.addPage({ margin: 50 });
+        doc.rect(0, 0, width, 120).fill("#1e293b");
+        doc.fillColor("white").font("Helvetica-Bold").fontSize(28).text("02. Sistema de Color", 50, 50);
+
+        doc.fillColor("#333333").font("Helvetica-Bold").fontSize(18).text("Paleta Corporativa", 50, 160);
+        doc.font("Helvetica").fontSize(11).fillColor("#666666").text("Estos colores definen la identidad cromática de la marca y deben utilizarse de forma consistente.", 50, 185, { width: 400 });
 
         if (currentColors && Array.isArray(currentColors)) {
+            const boxWidth = Math.min((width - 100 - (currentColors.length - 1) * 20) / currentColors.length, 120);
             currentColors.forEach((color, i) => {
-                const yPos = 100 + (i * 70);
-                doc.rect(50, yPos, 50, 50).fill(color.hex);
-                doc.fillColor("black").fontSize(12).text(color.name, 115, yPos + 10);
-                doc.fillColor("#666666").fontSize(10).text(`HEX: ${color.hex.toUpperCase()}`, 115, yPos + 25);
-                doc.fontSize(9).text(color.usage, 115, yPos + 38);
+                const xPos = 50 + i * (boxWidth + 20);
+                doc.rect(xPos, 240, boxWidth, boxWidth).fill(color.hex);
+                doc.fillColor("#333333").font("Helvetica-Bold").fontSize(14).text(color.name, xPos, 240 + boxWidth + 15);
+                doc.font("Helvetica").fillColor("#666666").fontSize(10).text(`HEX: ${color.hex.toUpperCase()}`, xPos, 240 + boxWidth + 35);
+                doc.fontSize(9).text(color.usage, xPos, 240 + boxWidth + 50);
             });
         }
 
-        // --- SECCIÓN 3: TIPOGRAFÍA ---
-        doc.moveDown(4);
-        const typoY = doc.y + 20;
-        doc.fillColor("black").fontSize(20).text("3. Tipografía", 50, typoY);
-        doc.moveTo(50, typoY + 25).lineTo(550, typoY + 25).stroke("#eeeeee");
+        // --- PÁGINA 4: TIPOGRAFÍA ---
+        doc.addPage({ margin: 50 });
+        doc.rect(0, 0, width, 120).fill("#1e293b");
+        doc.fillColor("white").font("Helvetica-Bold").fontSize(28).text("03. Sistema Tipográfico", 50, 50);
 
         if (currentTypography) {
-            const hName = currentTypography.heading?.name || "Inter";
-            const bName = currentTypography.body?.name || "DM Sans";
+            const hName = currentTypography.heading?.name || "Primaria";
+            const bName = currentTypography.body?.name || "Secundaria";
 
-            doc.fillColor("black").fontSize(14).text(`Títulos: ${hName}`, 50, typoY + 50);
-            doc.fillColor("#666666").fontSize(10).text(`Uso: ${currentTypography.heading?.usage || "Titulares"}`, 50, typoY + 70);
-            doc.fontSize(22).fillColor("black").text("ABCDEFGHIJKLMNÑOPQRSTUVWXYZ", 50, typoY + 90);
+            doc.fillColor("#333333").font("Helvetica-Bold").fontSize(24).text(hName, 50, 160);
+            doc.font("Helvetica").fontSize(11).fillColor(primaryColor).text(`USO: ${currentTypography.heading?.usage || "Títulos"}`, 50, 190);
+            doc.fillColor("#111111").font("Helvetica").fontSize(32).text("Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789", 50, 215, { width: 450 });
 
-            doc.fontSize(14).text(`Cuerpo: ${bName}`, 50, typoY + 140);
-            doc.fillColor("#666666").fontSize(10).text(`Uso: ${currentTypography.body?.usage || "Párrafos"}`, 50, typoY + 160);
-            doc.fontSize(12).fillColor("#333333").text("El veloz murciélago hindú comía feliz cardillo y kiwi. La cigüeña tocaba el saxofón detrás del palenque de paja.", 50, typoY + 180, { width: 500 });
+            doc.moveTo(50, 320).lineTo(width - 50, 320).stroke("#e2e8f0");
+
+            doc.fillColor("#333333").font("Helvetica-Bold").fontSize(24).text(bName, 50, 350);
+            doc.font("Helvetica").fontSize(11).fillColor(secondaryColor).text(`USO: ${currentTypography.body?.usage || "Cuerpo de texto"}`, 50, 380);
+            doc.fillColor("#475569").fontSize(14).text("La tipografía secundaria facilita la lectura en bloques de texto prolongados. El veloz murciélago hindú comía feliz cardillo y kiwi. La cigüeña tocaba el saxofón detrás del palenque de paja.", 50, 405, { width: 450, lineGap: 6 });
         }
 
-        // --- SECCIÓN 4: ICONOGRAFÍA ---
-        doc.addPage();
-        doc.fillColor("black").fontSize(20).text("4. Iconografía y Elementos", 50, 50);
-        doc.moveTo(50, 75).lineTo(550, 75).stroke("#eeeeee");
+        // --- PÁGINA 5: ICONOGRAFÍA ---
+        doc.addPage({ margin: 50 });
+        doc.rect(0, 0, width, 120).fill("#1e293b");
+        doc.fillColor("white").font("Helvetica-Bold").fontSize(28).text("04. Iconografía", 50, 50);
+
+        doc.fillColor("#333333").font("Helvetica-Bold").fontSize(18).text("Set de Iconos", 50, 160);
 
         if (branding.icons && Array.isArray(branding.icons)) {
-            const iconSize = 80;
-            const margin = 20;
-            const iconsPerRow = 4;
+            const iconSize = 90;
+            const marginX = 40;
+            const marginY = 60;
+            const iconsPerRow = 3;
+            const startX = (width - (iconsPerRow * iconSize + (iconsPerRow - 1) * marginX)) / 2;
 
             branding.icons.forEach((icon, i) => {
                 const row = Math.floor(i / iconsPerRow);
                 const col = i % iconsPerRow;
-                const x = 50 + col * (iconSize + margin);
-                const y = 100 + row * (iconSize + 40);
+                const x = startX + col * (iconSize + marginX);
+                const y = 220 + row * (iconSize + marginY);
 
-                try {
-                    if (icon.svg.startsWith("data:image")) {
-                        doc.image(icon.svg, x, y, { fit: [iconSize, iconSize] });
-                    } else if (icon.svg.startsWith("<svg")) {
-                        doc.rect(x, y, iconSize, iconSize).stroke("#cccccc");
-                    } else {
-                        const iconFileName = icon.svg.split("/").pop();
-                        const iconPath = storage.getImagePhysicalPath(project.id, iconFileName);
-                        if (fs.existsSync(iconPath)) {
-                            doc.image(iconPath, x, y, { fit: [iconSize, iconSize] });
-                        }
-                    }
-                    doc.fillColor("#666666").fontSize(8).text(icon.name, x, y + iconSize + 5, { width: iconSize, align: 'center' });
-                } catch (e) {
-                    console.error("Error embedding icon in PDF:", e);
-                }
+                doc.rect(x - 10, y - 10, iconSize + 20, iconSize + 20).fill("#f8fafc").stroke();
+                const iconAdded = addImageLocal(icon.svg, x, y, { fit: [iconSize, iconSize] });
+                if (!iconAdded && icon.svg.startsWith("<svg")) doc.rect(x, y, iconSize, iconSize).stroke("#cbd5e1");
+
+                doc.fillColor("#475569").font("Helvetica-Bold").fontSize(10).text(icon.name, x - 10, y + iconSize + 15, { width: iconSize + 20, align: 'center' });
             });
         }
 
@@ -570,5 +584,9 @@ if (isProduction) {
 app.listen(PORT, () => {
     const url = isProduction ? `https://tu-app.onrender.com` : `http://localhost:${PORT}`;
     console.log(`🚀 Servidor corriendo en ${url} [${isProduction ? 'PRODUCCIÓN' : 'DESARROLLO'}]`);
+
+    // Auto-limpieza de proyectos antiguos
+    storage.cleanupOldProjects(10); // Ejecutar al inicio
+    setInterval(() => storage.cleanupOldProjects(10), 12 * 60 * 60 * 1000); // 12 horas
 });
 

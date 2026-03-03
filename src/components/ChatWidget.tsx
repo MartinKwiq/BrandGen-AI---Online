@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '../utils/cn';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface ChatWidgetProps {
   messages: { id: string; role: 'user' | 'assistant'; content: string; timestamp: Date }[];
@@ -24,6 +25,7 @@ export function ChatWidget({
 }: ChatWidgetProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { t, lang: language } = useTranslation();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,7 +42,7 @@ export function ChatWidget({
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-violet-600 to-indigo-600">
+      <div className="px-6 py-4 bg-gradient-to-r from-cyan-600 to-pink-600">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
@@ -48,12 +50,12 @@ export function ChatWidget({
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <span className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-violet-600 rounded-full ${aiReady ? 'bg-green-400' : 'bg-yellow-400'
+            <span className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-cyan-600 rounded-full ${aiReady ? 'bg-green-400' : 'bg-yellow-400'
               }`}></span>
           </div>
           <div>
-            <h3 className="text-white font-semibold">BrandGen AI</h3>
-            <p className="text-white/70 text-xs">Asistente de branding</p>
+            <h3 className="text-white font-semibold">{t('chat', 'assistantName')}</h3>
+            <p className="text-white/70 text-xs">{t('chat', 'assistantSubtitle')}</p>
           </div>
         </div>
       </div>
@@ -72,7 +74,7 @@ export function ChatWidget({
               className={cn(
                 'max-w-[80%] rounded-2xl px-4 py-3',
                 message.role === 'user'
-                  ? 'bg-violet-600 text-white rounded-br-md'
+                  ? 'bg-cyan-600 text-white rounded-br-md'
                   : 'bg-white border border-slate-200 text-slate-800 rounded-bl-md shadow-sm'
               )}
             >
@@ -83,7 +85,7 @@ export function ChatWidget({
                   message.role === 'user' ? 'text-white/60' : 'text-slate-400'
                 )}
               >
-                {new Date(message.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                {new Date(message.timestamp).toLocaleTimeString(language === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           </div>
@@ -91,8 +93,8 @@ export function ChatWidget({
 
         {isLoading && (
           <div className="flex gap-3 animate-fade-in">
-            <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
@@ -116,7 +118,7 @@ export function ChatWidget({
             <button
               onClick={onGenerate}
               disabled={isGenerating}
-              className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-violet-200 hover:shadow-xl flex items-center justify-center gap-3 group"
+              className="w-full py-4 bg-gradient-to-r from-cyan-600 to-pink-600 hover:from-cyan-700 hover:to-pink-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-cyan-200 hover:shadow-xl flex items-center justify-center gap-3 group"
             >
               {isGenerating ? (
                 <>
@@ -124,17 +126,17 @@ export function ChatWidget({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Generando tu Marca...
+                  {t('chat', 'generatingBrand')}
                 </>
               ) : (
                 <>
                   <span className="text-xl group-hover:scale-125 transition-transform">✨</span>
-                  <span>Generar Branding Profesional</span>
+                  <span>{t('chat', 'generateBrand')}</span>
                 </>
               )}
             </button>
             <p className="text-center text-[10px] text-slate-400 mt-2 uppercase tracking-widest font-medium">
-              Tu entrevista ha terminado. Haz clic arriba para empezar.
+              {t('chat', 'interviewFinished')}
             </p>
           </div>
         )}
@@ -145,14 +147,14 @@ export function ChatWidget({
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={disabled ? 'Genera tu branding primero...' : 'Escribe un mensaje...'}
+              placeholder={disabled ? t('chat', 'inputDisabled') : t('chat', 'inputPlaceholder')}
               disabled={disabled || isLoading}
-              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none transition-all text-sm"
+              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all text-sm"
             />
             <button
               type="submit"
               disabled={!input.trim() || disabled || isLoading}
-              className="px-4 py-3 bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 text-white rounded-xl transition-colors flex items-center justify-center"
+              className="px-4 py-3 bg-cyan-600 hover:bg-cyan-700 disabled:bg-slate-300 text-white rounded-xl transition-colors flex items-center justify-center"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="22" y1="2" x2="11" y2="13" />

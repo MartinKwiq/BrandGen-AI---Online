@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { BrandProject } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface DashboardProps {
   projects: BrandProject[];
@@ -11,6 +12,7 @@ interface DashboardProps {
 
 export function Dashboard({ projects, selectedId, onSelect, onDelete, onNewProject }: DashboardProps) {
   const [view] = useState<'grid' | 'list'>('grid');
+  const { t } = useTranslation();
 
   const stats = {
     total: projects.length,
@@ -24,17 +26,17 @@ export function Dashboard({ projects, selectedId, onSelect, onDelete, onNewProje
       <div className="px-6 py-4 bg-white border-b border-slate-200">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Mis Proyectos</h1>
-            <p className="text-sm text-slate-500">{stats.total} proyectos en total</p>
+            <h1 className="text-2xl font-bold text-slate-900">{t('dashboard', 'title')}</h1>
+            <p className="text-sm text-slate-500">{stats.total} {t('dashboard', 'totalProjects')}</p>
           </div>
           <button
             onClick={onNewProject}
-            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 5v14M5 12h14" />
             </svg>
-            Nuevo Proyecto
+            {t('dashboard', 'newProject')}
           </button>
         </div>
 
@@ -42,15 +44,15 @@ export function Dashboard({ projects, selectedId, onSelect, onDelete, onNewProje
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-slate-50 rounded-xl p-4">
             <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-            <p className="text-sm text-slate-500">Total</p>
+            <p className="text-sm text-slate-500">{t('dashboard', 'statsTotal')}</p>
           </div>
           <div className="bg-green-50 rounded-xl p-4">
             <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-            <p className="text-sm text-green-600">Completados</p>
+            <p className="text-sm text-green-600">{t('dashboard', 'statsCompleted')}</p>
           </div>
           <div className="bg-yellow-50 rounded-xl p-4">
             <p className="text-2xl font-bold text-yellow-600">{stats.draft}</p>
-            <p className="text-sm text-yellow-600">Borradores</p>
+            <p className="text-sm text-yellow-600">{t('dashboard', 'statsDrafts')}</p>
           </div>
         </div>
       </div>
@@ -64,18 +66,18 @@ export function Dashboard({ projects, selectedId, onSelect, onDelete, onNewProje
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">No hay proyectos aún</h3>
-            <p className="text-slate-500 mb-4">Crea tu primer proyecto de branding</p>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">{t('dashboard', 'emptyTitle')}</h3>
+            <p className="text-slate-500 mb-4">{t('dashboard', 'emptySubtitle')}</p>
             <button
               onClick={onNewProject}
-              className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-medium transition-colors"
+              className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors"
             >
-              Crear Proyecto
+              {t('dashboard', 'createProjectBtn')}
             </button>
           </div>
         ) : (
           <div className={
-            view === 'grid' 
+            view === 'grid'
               ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
               : 'space-y-3'
           }>
@@ -105,6 +107,8 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project, isSelected, onSelect, onDelete, view }: ProjectCardProps) {
+  const { t, lang } = useTranslation();
+
   const statusColors = {
     draft: 'bg-yellow-100 text-yellow-700',
     generating: 'bg-blue-100 text-blue-700',
@@ -113,10 +117,10 @@ function ProjectCard({ project, isSelected, onSelect, onDelete, view }: ProjectC
   };
 
   const statusLabels = {
-    draft: 'Borrador',
-    generating: 'Generando',
-    completed: 'Completado',
-    exported: 'Exportado',
+    draft: t('projectList', 'draft'),
+    generating: t('projectList', 'generating'),
+    completed: t('projectList', 'completed'),
+    exported: t('projectList', 'exported'),
   };
 
   if (view === 'list') {
@@ -125,10 +129,10 @@ function ProjectCard({ project, isSelected, onSelect, onDelete, view }: ProjectC
         onClick={onSelect}
         className={
           'group flex items-center gap-4 p-4 bg-white rounded-xl cursor-pointer transition-all hover:shadow-md ' +
-          (isSelected ? 'ring-2 ring-violet-500 shadow-md' : 'border border-slate-200')
+          (isSelected ? 'ring-2 ring-cyan-500 shadow-md' : 'border border-slate-200')
         }
       >
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-pink-600 flex items-center justify-center text-white font-bold flex-shrink-0">
           {project.name.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
@@ -159,14 +163,14 @@ function ProjectCard({ project, isSelected, onSelect, onDelete, view }: ProjectC
       onClick={onSelect}
       className={
         'group relative bg-white rounded-2xl overflow-hidden cursor-pointer transition-all hover:shadow-lg ' +
-        (isSelected ? 'ring-4 ring-violet-500 shadow-xl' : 'border border-slate-200 hover:border-violet-300')
+        (isSelected ? 'ring-4 ring-cyan-500 shadow-xl' : 'border border-slate-200 hover:border-cyan-300')
       }
     >
       {/* Preview Header */}
-      <div 
+      <div
         className="h-24 relative"
-        style={{ 
-          background: project.branding 
+        style={{
+          background: project.branding
             ? `linear-gradient(135deg, ${project.branding.colors[0].hex} 0%, ${project.branding.colors[1].hex} 100%)`
             : 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)'
         }}
@@ -196,13 +200,13 @@ function ProjectCard({ project, isSelected, onSelect, onDelete, view }: ProjectC
           <h3 className="font-semibold text-slate-900 truncate">{project.name}</h3>
         </div>
         <p className="text-sm text-slate-500 line-clamp-2 mb-3">{project.description}</p>
-        
+
         <div className="flex items-center justify-between">
           <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColors[project.status]}`}>
             {statusLabels[project.status]}
           </span>
           <span className="text-xs text-slate-400">
-            {new Date(project.updatedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+            {new Date(project.updatedAt).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
           </span>
         </div>
 

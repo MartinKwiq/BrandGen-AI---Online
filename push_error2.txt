@@ -1,0 +1,91 @@
+git : remote: error: 
+GH013: Repository rule 
+violations found for 
+refs/heads/main.        
+En línea: 1 Carácter: 64
++ ... 
+ktop\Proyectos\BrandGen AI 
+- Online"; git push -u 
+origin main } 2>&1  ...
++                          
+                 
+~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (rem  
+  ote: error: ...s/main.   
+         :String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+remote: 
+remote: - GITHUB PUSH 
+PROTECTION        
+remote:   ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö  
+      
+remote:     Resolve the 
+following violations 
+before pushing again       
+ 
+remote: 
+remote:     - Push cannot 
+contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how 
+to resolve a blocked push  
+      
+remote:      https://docs.g
+ithub.com/code-security/sec
+ret-scanning/working-with-s
+ecret-scanning-and-push-pro
+tection/working-with-push-p
+rotection-from-the-command-
+line#resolving-a-blocked-pu
+sh        
+remote:             
+remote:             
+remote:       ÔÇöÔÇö 
+Google Cloud Service 
+Account Credentials ÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö    
+    
+remote:        locations:  
+      
+remote:          - commit: 
+b0ae14a4778e9ba9188e8ed0677
+702abdc7cc1c0        
+remote:            path: ba
+ckend/firebase-key.json:1  
+      
+remote:             
+remote:        (?) To 
+push, remove secret from 
+commit(s) or follow this 
+URL to allow the secret.   
+     
+remote:        https://gith
+ub.com/MartinKwiq/BrandGen-
+AI---Online/security/secret
+-scanning/unblock-secret/3A
+RxFoG6svbkGKtdYI4dojIplOr  
+      
+remote:             
+remote: 
+remote: 
+To https://github.com/Marti
+nKwiq/BrandGen-AI---Online.
+git
+ ! [remote rejected] main 
+-> main (push declined due 
+to repository rule 
+violations)
+error: failed to push some 
+refs to 'https://github.com
+/MartinKwiq/BrandGen-AI---O
+nline.git'
+

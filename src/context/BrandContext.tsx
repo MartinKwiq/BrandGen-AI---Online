@@ -73,7 +73,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
           {
             id: generateId(),
             role: 'assistant',
-            content: `¡Hola! Soy BrandGen AI, tu consultor de branding. He creado el proyecto "${name}" basándome en tu descripción. Para empezar a diseñar tu identidad ideal, cuéntame un poco más sobre el propósito principal de tu negocio. ¿Qué es lo que quieres lograr con esta marca?`,
+            content: `¡Hola! Soy Quick Branding, tu consultor de branding. He creado el proyecto "${name}" basándome en tu descripción. Para empezar a diseñar tu identidad ideal, cuéntame un poco más sobre el propósito principal de tu negocio. ¿Qué es lo que quieres lograr con esta marca?`,
             timestamp: new Date(),
           },
         ],

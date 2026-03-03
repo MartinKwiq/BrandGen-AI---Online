@@ -82,7 +82,7 @@ export interface WebhookConfig {
 
 export interface AppSettings {
   openaiApiKey: string;
-  theme: 'light' | 'dark';
+  theme: 'light' | 'dark' | 'system';
   language: string;
   webhooks: WebhookConfig[];
 }

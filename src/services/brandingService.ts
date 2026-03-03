@@ -399,7 +399,7 @@ export async function getAIResponse(messages: { role: string; content: string }[
       history.shift();
     }
 
-    const systemInstruction = `Eres BrandGen AI, un Consultor de Branding de Élite de la agencia 'Brand Genius'.
+    const systemInstruction = `Eres Quick Branding, un Consultor de Branding de Élite de la agencia 'Brand Genius'.
 Tu misión es guiar al usuario en una entrevista de branding 1-a-1 fluida para descubrir su esencia.
 
 REGLAS DE ORO (TRABAJO CRÍTICO):
@@ -512,7 +512,7 @@ function getFallbackChatResponse(messages: { role: string; content: string }[]):
   const userMessageCount = messages.filter(m => m.role === 'user').length;
 
   if (userMessageCount === 0) {
-    return "¡Hola! Soy BrandGen AI, tu asistente de branding. Cuéntame sobre tu empresa o marca. ¿Qué nombre tiene y a qué se dedica?";
+    return "¡Hola! Soy Quick Branding, tu asistente de branding. Cuéntame sobre tu empresa o marca. ¿Qué nombre tiene y a qué se dedica?";
   }
 
   if (lastMessage.includes('logo') || lastMessage.includes('diseño')) {

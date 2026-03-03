@@ -27,3 +27,6 @@ BACKUPS/
 # Editor
 .vscode/
 .idea/
+
+# Secrets
+firebase-key.json
