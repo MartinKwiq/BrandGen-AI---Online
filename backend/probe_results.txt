@@ -1,0 +1,5 @@
+--- PROBE RESULTS ---
+Type of genAI: object
+Methods on genAI instance: apiKey
+Methods on prototype: constructor, getGenerativeModel, getGenerativeModelFromCachedContent
+Is listModels a function? undefined

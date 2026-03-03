@@ -1,0 +1,222 @@
+﻿[dotenv@17.2.4] injecting env (3) from .env -- tip: ­ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+--- REPRODUCIENDO ERROR DE CHAT ---
+Llamando a ai.models.generateContent con systemInstruction (gemini-2.0-flash)...
+node : ÔØî ERROR 
+DETECTADO:
+En línea: 1 Carácter: 
+1
++ node 
+reproduce_error.js 
+2>&1 | Out-File 
+-FilePath 
+reproduce_output_fi 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (ÔØî ERROR    
+ DETECTADO::String    
+) [], RemoteExcep    
+tion
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+Nombre: ApiError
+Mensaje: {"error":{"co
+de":429,"message":"You
+ exceeded your 
+current quota, please 
+check your plan and 
+billing details. For 
+more information on 
+this error, head to: h
+ttps://ai.google.dev/g
+emini-api/docs/rate-li
+mits. To monitor your 
+current usage, head 
+to: https://ai.dev/rat
+e-limit. \n* Quota 
+exceeded for metric: g
+enerativelanguage.goog
+leapis.com/generate_co
+ntent_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash\n* 
+Quota exceeded for 
+metric: generativelang
+uage.googleapis.com/ge
+nerate_content_free_ti
+er_requests, limit: 
+0, model: 
+gemini-2.0-flash\n* 
+Quota exceeded for 
+metric: generativelang
+uage.googleapis.com/ge
+nerate_content_free_ti
+er_input_token_count, 
+limit: 0, model: gemin
+i-2.0-flash\nPlease 
+retry in 23.640699343s
+.","status":"RESOURCE_
+EXHAUSTED","details":[
+{"@type":"type.googlea
+pis.com/google.rpc.Hel
+p","links":[{"descript
+ion":"Learn more 
+about Gemini API quota
+s","url":"https://ai.g
+oogle.dev/gemini-api/d
+ocs/rate-limits"}]},{"
+@type":"type.googleapi
+s.com/google.rpc.Quota
+Failure","violations":
+[{"quotaMetric":"gener
+ativelanguage.googleap
+is.com/generate_conten
+t_free_tier_requests",
+"quotaId":"GenerateReq
+uestsPerDayPerProjectP
+erModel-FreeTier","quo
+taDimensions":{"locati
+on":"global","model":"
+gemini-2.0-flash"}},{"
+quotaMetric":"generati
+velanguage.googleapis.
+com/generate_content_f
+ree_tier_requests","qu
+otaId":"GenerateReques
+tsPerMinutePerProjectP
+erModel-FreeTier","quo
+taDimensions":{"locati
+on":"global","model":"
+gemini-2.0-flash"}},{"
+quotaMetric":"generati
+velanguage.googleapis.
+com/generate_content_f
+ree_tier_input_token_c
+ount","quotaId":"Gener
+ateContentInputTokensP
+erModelPerMinute-FreeT
+ier","quotaDimensions"
+:{"location":"global",
+"model":"gemini-2.0-fl
+ash"}}]},{"@type":"typ
+e.googleapis.com/googl
+e.rpc.RetryInfo","retr
+yDelay":"23s"}]}}
+Stack: ApiError: {"err
+or":{"code":429,"messa
+ge":"You exceeded 
+your current quota, 
+please check your 
+plan and billing 
+details. For more 
+information on this 
+error, head to: https:
+//ai.google.dev/gemini
+-api/docs/rate-limits.
+ To monitor your 
+current usage, head 
+to: https://ai.dev/rat
+e-limit. \n* Quota 
+exceeded for metric: g
+enerativelanguage.goog
+leapis.com/generate_co
+ntent_free_tier_reques
+ts, limit: 0, model: 
+gemini-2.0-flash\n* 
+Quota exceeded for 
+metric: generativelang
+uage.googleapis.com/ge
+nerate_content_free_ti
+er_requests, limit: 
+0, model: 
+gemini-2.0-flash\n* 
+Quota exceeded for 
+metric: generativelang
+uage.googleapis.com/ge
+nerate_content_free_ti
+er_input_token_count, 
+limit: 0, model: gemin
+i-2.0-flash\nPlease 
+retry in 23.640699343s
+.","status":"RESOURCE_
+EXHAUSTED","details":[
+{"@type":"type.googlea
+pis.com/google.rpc.Hel
+p","links":[{"descript
+ion":"Learn more 
+about Gemini API quota
+s","url":"https://ai.g
+oogle.dev/gemini-api/d
+ocs/rate-limits"}]},{"
+@type":"type.googleapi
+s.com/google.rpc.Quota
+Failure","violations":
+[{"quotaMetric":"gener
+ativelanguage.googleap
+is.com/generate_conten
+t_free_tier_requests",
+"quotaId":"GenerateReq
+uestsPerDayPerProjectP
+erModel-FreeTier","quo
+taDimensions":{"locati
+on":"global","model":"
+gemini-2.0-flash"}},{"
+quotaMetric":"generati
+velanguage.googleapis.
+com/generate_content_f
+ree_tier_requests","qu
+otaId":"GenerateReques
+tsPerMinutePerProjectP
+erModel-FreeTier","quo
+taDimensions":{"locati
+on":"global","model":"
+gemini-2.0-flash"}},{"
+quotaMetric":"generati
+velanguage.googleapis.
+com/generate_content_f
+ree_tier_input_token_c
+ount","quotaId":"Gener
+ateContentInputTokensP
+erModelPerMinute-FreeT
+ier","quotaDimensions"
+:{"location":"global",
+"model":"gemini-2.0-fl
+ash"}}]},{"@type":"typ
+e.googleapis.com/googl
+e.rpc.RetryInfo","retr
+yDelay":"23s"}]}}
+    at 
+throwErrorIfNotOK (fil
+e:///C:/Users/USER/Des
+ktop/Proyectos/BrandGe
+n%20AI/backend/node_mo
+dules/@google/genai/di
+st/node/index.mjs:1217
+2:30)
+    at process.process
+TicksAndRejections (no
+de:internal/process/ta
+sk_queues:103:5)
+    at async file:///C
+:/Users/USER/Desktop/P
+royectos/BrandGen%20AI
+/backend/node_modules/
+@google/genai/dist/nod
+e/index.mjs:11892:13
+    at async Models.ge
+nerateContent (file://
+/C:/Users/USER/Desktop
+/Proyectos/BrandGen%20
+AI/backend/node_module
+s/@google/genai/dist/n
+ode/index.mjs:13235:24
+)
+    at async testChat 
+(file:///C:/Users/USER
+/Desktop/Proyectos/Bra
+ndGen%20AI/backend/rep
+roduce_error.js:35:26)

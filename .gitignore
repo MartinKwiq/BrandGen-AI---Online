@@ -1,0 +1,29 @@
+# Dependencias
+node_modules/
+backend/node_modules/
+
+# Build artifacts
+dist/
+backend/storage/
+
+# Variables de entorno (NO subir al repo)
+backend/.env
+.env
+.env.local
+.env.*
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Archivos de debug
+BACKUPS/
+*.zip
+
+# Editor
+.vscode/
+.idea/
