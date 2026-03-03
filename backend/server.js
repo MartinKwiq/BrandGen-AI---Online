@@ -556,9 +556,11 @@ if (isProduction) {
     const distPath = path.join(__dirname, '..', 'dist');
     app.use(express.static(distPath));
     // Cualquier ruta que no sea /api/* devuelve el index.html del frontend
-    app.get('*', (req, res) => {
+    app.get('/*', (req, res) => {
         if (!req.path.startsWith('/api')) {
             res.sendFile(path.join(distPath, 'index.html'));
+        } else {
+            res.status(404).json({ error: 'Not found' });
         }
     });
     console.log(`📁 Sirviendo frontend estático desde: ${distPath}`);
