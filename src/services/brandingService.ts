@@ -241,11 +241,19 @@ Industry: ${industry || 'technology'}. No text, vector style, white background.`
         let iconDefinitions = [];
         try {
           const serviceDiscoveryPrompt = `
-            Marca: "${brandName}". Descripción: "${description}".
-            Entrevista: "${chatContext || ''}".
-            Identifica los 6 servicios clave de este negocio para crear iconos para su web.
-            Usa nombres reales de servicios (ej: "Soporte Técnico", "Diseño", "SEO").
-            Responde en JSON: {"services": [{"name": "...", "description": "..."}]}
+            Actúa como un Especialista en UX/UI y Estrategia de Marca.
+            Marca: "${brandName}". Descripción del Negocio: "${description}".
+            Contexto de la Entrevista: "${chatContext || ''}".
+
+            TAREA: Identifica exactamente 6 servicios, secciones o categorías clave de este negocio para crear un sistema de iconos coherente para su interface digital.
+            
+            REGLAS:
+            1. Usa nombres de servicios reales y descriptivos (max 3 palabras).
+            2. Proporciona una explicación visual breve de cómo representar cada uno (ej: "Un engranaje con una lupa" para Soporte Técnico).
+            3. Asegúrate de que los 6 servicios cubran el espectro completo del negocio descubierto en la entrevista.
+
+            RESPONDE ESTRICTAMENTE EN JSON:
+            {"services": [{"name": "Nombre", "description": "Concepto visual"}]}
           `;
           const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
           const discoveryJson = discoveryRes.result || discoveryRes;
@@ -269,14 +277,18 @@ Industry: ${industry || 'technology'}. No text, vector style, white background.`
           const primaryHex = normalizedDirection.colors?.[0]?.hex || '#6366f1';
 
           const iconPrompt = `
-            Modern Web Service Icon for "${def.name}".
-            Visual concept: ${def.description || def.name}.
-            Industry Context: ${industry}.
-            Design Style: High-quality modern glassmorphism or 3D render style but simplified, soft shadows, vibrant ${primaryHex} gradients.
-            Shape: Perfectly centered inside a soft rounded square background.
-            Composition: Clean vector-like lines, minimalist but premium.
-            Output: High definition, professional web illustration, centered, NO text.
-            Background: Transparent background.
+            Diseña un icono de interface de usuario (UI) para el servicio: "${def.name}".
+            Concepto Visual: ${def.description || def.name}.
+            Directrices Estratégicas: ${creativeData.brandStrategy?.visual_style_guidelines || 'Modern and professional'}.
+            Estilo de Sistema: ${normalizedDirection.iconStyle}.
+            
+            REGLAS DE COHERENCIA (Familia de Iconos):
+            1. **Uniformes**: Este icono DEBE pertenecer a una familia de 6 iconos. Usa el mismo grosor de línea (stroke), mismo lenguaje geométrico y mismo nivel de detalle que un set profesional de iconos (estilo Phosphor o Lucide).
+            2. **Estética**: Estilo vector limpio, minimalista y escalable.
+            3. **Color**: Usa gradientes suaves basados en ${primaryHex}.
+            4. **Fondo**: Centrado en un lienzo blanco limpio o transparente. Sin bordes innecesarios.
+            5. **Prohibido**: NO incluyas texto, letras, ni sombras fotorealistas. No uses fondos complejos.
+            6. **Output**: Ilustración digital de alta calidad, estilo profesional para aplicaciones modernas.
           `;
 
           try {
