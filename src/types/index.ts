@@ -17,6 +17,14 @@ export interface BrandProject {
   canGenerate?: boolean;
 }
 
+export interface BrandStrategy {
+  brand_personality: string[];
+  brand_positioning: string;
+  brand_tone: string;
+  target_audience: string;
+  visual_style_guidelines: string;
+}
+
 export interface BrandBranding {
   brandName: string;
   tagline: string;
@@ -25,6 +33,7 @@ export interface BrandBranding {
   typography: TypographySet;
   icons: BrandIcon[];
   proposals: BrandProposal[];
+  strategy?: BrandStrategy; // Added brand strategy field
   selectedProposalId?: number;
   selectedComponents?: {
     colorProposalId?: number;

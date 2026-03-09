@@ -109,15 +109,30 @@ function AppContent() {
   // Render project list view (sidebar)
   const renderProjectList = () => (
     <div className={cn(
-      "w-80 border-r flex flex-col h-full z-10 transition-colors duration-300",
-      resolvedTheme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+      "w-80 border-r flex flex-col h-full z-10 transition-all duration-500 shadow-2xl relative overflow-hidden",
+      resolvedTheme === 'dark'
+        ? 'bg-slate-900 border-slate-800'
+        : 'bg-gradient-to-b from-[#00df9a] to-[#00b894] border-none text-white'
     )}>
-      <div className="p-4 border-b border-slate-200">
+      {/* Logo Area */}
+      <div className="p-6 pb-2">
+        <div className="flex items-center gap-3 bg-white/15 p-3 rounded-2xl border border-white/20 backdrop-blur-sm">
+          <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl p-1.5 shadow-sm">
+            <img src="/kwiq-logo.png" alt="Kwiq Logo" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <h1 className="font-bold text-xl tracking-tight text-white leading-tight">Kwiq</h1>
+            <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-white/70">Branding AI</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4">
         <button
           onClick={() => setShowNewProjectModal(true)}
-          className="w-full px-4 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+          className="w-full px-6 py-4 bg-[#ff57b7] hover:bg-[#ff3ba6] text-white rounded-2xl font-bold transition-all shadow-lg shadow-[#ff57b7]/30 hover:shadow-[#ff57b7]/50 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 border border-white/20"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <path d="M12 5v14M5 12h14" />
           </svg>
           {t('sidebar', 'new')} {t('sidebar', 'projects')}
@@ -133,13 +148,17 @@ function AppContent() {
         />
       </div>
 
-      <div className="p-4 border-t border-slate-200 bg-slate-50">
+      <div className="p-4 mt-auto">
         <button
           onClick={() => setView('settings')}
-          className={`w-full px-4 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 ${view === 'settings' ? 'bg-cyan-100 text-cyan-700' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-            }`}
+          className={cn(
+            "w-full px-4 py-3 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 border",
+            view === 'settings'
+              ? 'bg-white text-[#00b894] border-white shadow-xl'
+              : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+          )}
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>

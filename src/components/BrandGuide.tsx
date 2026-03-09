@@ -12,7 +12,7 @@ interface BrandGuideProps {
   projectId?: string;
 }
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const BACKEND_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
 
 export function BrandGuide({ branding, projectId }: BrandGuideProps) {
   const { currentProject, updateProject } = useBrand();
@@ -21,12 +21,12 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
   const { t } = useTranslation();
 
   const sections = [
-    { id: 'overview', label: t('brandGuide', 'tabs.overview'), icon: '📋' },
-    { id: 'logo', label: t('brandGuide', 'tabs.logo'), icon: '🎨' },
-    { id: 'colors', label: t('brandGuide', 'tabs.colors'), icon: '🎭' },
-    { id: 'typography', label: t('brandGuide', 'tabs.typography'), icon: '✍️' },
-    { id: 'icons', label: t('brandGuide', 'tabs.icons'), icon: '⬡' },
-    { id: 'mixer', label: t('brandGuide', 'tabs.mixer'), icon: '⚙️' },
+    { id: 'overview', label: t('brandGuide', 'tabOverview'), icon: '✨' },
+    { id: 'logo', label: t('brandGuide', 'tabLogo'), icon: '🎨' },
+    { id: 'colors', label: t('brandGuide', 'tabColors'), icon: '🎭' },
+    { id: 'typography', label: t('brandGuide', 'tabTypography'), icon: '✍️' },
+    { id: 'icons', label: t('brandGuide', 'tabIcons'), icon: '⬡' },
+    { id: 'mixer', label: t('brandGuide', 'tabMixer'), icon: '⚙️' },
   ];
 
   useEffect(() => {
@@ -162,8 +162,15 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                     >
                       Descargar PNG
                     </button>
-                    <button className="flex-1 px-4 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">
-                      Descargar SVG
+                    <button
+                      onClick={() => {
+                        if (projectId) {
+                          window.open(`${window.location.origin}/api/projects/${projectId}/export/pdf`, '_blank');
+                        }
+                      }}
+                      className="flex-1 px-4 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Descargar Guía
                     </button>
                   </div>
                 </div>
@@ -571,16 +578,11 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setActiveSection('overview')}
+                onClick={() => setActiveSection('logo')}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-pink-600 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                    <line x1="9" y1="9" x2="9.01" y2="9" />
-                    <line x1="15" y1="9" x2="15.01" y2="9" />
-                  </svg>
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img src="/kwiq-logo.png" alt="Kwiq Logo" className="w-full h-full object-contain" />
                 </div>
                 <span className="font-bold text-slate-900">{branding.brandName}</span>
               </button>
@@ -588,9 +590,9 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
 
             <button
               onClick={() => setShowExportModal(true)}
-              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-kwiq hover:bg-kwiq-dark text-white rounded-xl font-medium transition-all shadow-md shadow-kwiq/10 hover:shadow-lg flex items-center gap-2"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="7 10 12 15 17 10" />
                 <line x1="12" y1="15" x2="12" y2="3" />
@@ -612,7 +614,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 className={cn(
                   'px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap',
                   activeSection === section.id
-                    ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-200'
+                    ? 'bg-kwiq text-white shadow-lg shadow-kwiq/20'
                     : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                 )}
               >
@@ -639,10 +641,11 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
               <button
                 onClick={() => {
                   if (projectId) {
-                    window.open(`${BACKEND_URL}/api/projects/${projectId}/export/pdf`, '_blank');
+                    const exportUrl = `${window.location.origin}/api/projects/${projectId}/export/pdf`;
+                    window.open(exportUrl, '_blank');
                   }
                 }}
-                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-cyan-500 hover:bg-cyan-50 transition-all flex items-center gap-3"
+                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-kwiq hover:bg-kwiq/5 transition-all flex items-center gap-3"
               >
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
                   <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -658,10 +661,11 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
               <button
                 onClick={() => {
                   if (projectId) {
-                    window.open(`${BACKEND_URL}/api/projects/${projectId}/export/contents`, '_blank');
+                    const exportUrl = `${window.location.origin}/api/projects/${projectId}/export/contents`;
+                    window.open(exportUrl, '_blank');
                   }
                 }}
-                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-cyan-500 hover:bg-cyan-50 transition-all flex items-center gap-3"
+                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-kwiq hover:bg-kwiq/5 transition-all flex items-center gap-3"
               >
                 <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
                   <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

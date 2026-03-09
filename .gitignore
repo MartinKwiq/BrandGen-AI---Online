@@ -19,6 +19,8 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+backend/*.txt
+backend/*.log
 
 # Archivos de debug
 BACKUPS/

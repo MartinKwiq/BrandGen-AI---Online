@@ -33,11 +33,11 @@ export function NewProjectModal({ isOpen, onClose, onSubmit, isLoading }: NewPro
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl animate-scale-in overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-cyan-600 to-pink-600">
+        <div className="px-6 py-4 bg-kwiq-dark border-b border-white/10">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-white">{t('newProjectModal', 'title')}</h2>
-              <p className="text-white/80 text-sm">{t('newProjectModal', 'subtitle')}</p>
+              <p className="text-white/70 text-sm">{t('newProjectModal', 'subtitle')}</p>
             </div>
             <button
               onClick={onClose}
@@ -137,68 +137,68 @@ export function WelcomeScreen({ onCreateProject }: WelcomeScreenProps) {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-3xl">
-      <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-cyan-500 to-pink-600 flex items-center justify-center mb-6 shadow-lg shadow-cyan-200">
-        <span className="text-white font-bold text-5xl font-serif">K</span>
+      <div className="w-24 h-24 rounded-3xl bg-transparent flex items-center justify-center mb-6 transform hover:scale-105 transition-transform duration-500">
+        <img src="/kwiq-logo.png" alt="Kwiq Logo" className="w-full h-full object-contain drop-shadow-2xl" />
       </div>
 
-      <h2 className="text-3xl font-bold text-slate-900 mb-3">
+      <h2 className="text-4xl font-bold text-slate-900 mb-3 tracking-tight">
         {t('welcomeScreen', 'title')}
       </h2>
-      <p className="text-slate-600 max-w-md mb-8">
+      <p className="text-slate-600 max-w-md mb-10 text-lg">
         {t('welcomeScreen', 'subtitle')}
       </p>
 
-      <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mb-8">
-        <div className="p-4 bg-white rounded-xl border border-slate-200 text-left hover:border-cyan-300 hover:shadow-md transition-all">
-          <div className="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center mb-3">
-            <svg className="w-5 h-5 text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <div className="grid sm:grid-cols-2 gap-5 max-w-3xl mb-12">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 text-left hover:border-kwiq hover:shadow-xl hover:shadow-kwiq/5 transition-all group">
+          <div className="w-12 h-12 rounded-xl bg-kwiq/10 flex items-center justify-center mb-4 group-hover:bg-kwiq group-hover:text-white transition-colors">
+            <svg className="w-6 h-6 text-kwiq group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </svg>
           </div>
-          <h3 className="font-semibold text-slate-900">{t('welcomeScreen', 'feature1Title')}</h3>
-          <p className="text-sm text-slate-500 mt-1">{t('welcomeScreen', 'feature1Desc')}</p>
+          <h3 className="font-bold text-slate-900 text-lg">{t('welcomeScreen', 'feature1Title')}</h3>
+          <p className="text-sm text-slate-500 mt-2 leading-relaxed">{t('welcomeScreen', 'feature1Desc')}</p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 text-left hover:border-cyan-300 hover:shadow-md transition-all">
-          <div className="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center mb-3">
-            <svg className="w-5 h-5 text-pink-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 text-left hover:border-kwiq hover:shadow-xl hover:shadow-kwiq/5 transition-all group">
+          <div className="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center mb-4 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+            <svg className="w-6 h-6 text-pink-600 group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
           </div>
-          <h3 className="font-semibold text-slate-900">{t('welcomeScreen', 'feature2Title')}</h3>
-          <p className="text-sm text-slate-500 mt-1">{t('welcomeScreen', 'feature2Desc')}</p>
+          <h3 className="font-bold text-slate-900 text-lg">{t('welcomeScreen', 'feature2Title')}</h3>
+          <p className="text-sm text-slate-500 mt-2 leading-relaxed">{t('welcomeScreen', 'feature2Desc')}</p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 text-left hover:border-cyan-300 hover:shadow-md transition-all">
-          <div className="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center mb-3">
-            <svg className="w-5 h-5 text-pink-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 text-left hover:border-kwiq hover:shadow-xl hover:shadow-kwiq/5 transition-all group">
+          <div className="w-12 h-12 rounded-xl bg-pink-50 flex items-center justify-center mb-4 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+            <svg className="w-6 h-6 text-pink-600 group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <circle cx="12" cy="12" r="6" />
               <circle cx="12" cy="12" r="2" />
             </svg>
           </div>
-          <h3 className="font-semibold text-slate-900">{t('welcomeScreen', 'feature3Title')}</h3>
-          <p className="text-sm text-slate-500 mt-1">{t('welcomeScreen', 'feature3Desc')}</p>
+          <h3 className="font-bold text-slate-900 text-lg">{t('welcomeScreen', 'feature3Title')}</h3>
+          <p className="text-sm text-slate-500 mt-2 leading-relaxed">{t('welcomeScreen', 'feature3Desc')}</p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 text-left hover:border-cyan-300 hover:shadow-md transition-all">
-          <div className="w-10 h-10 rounded-lg bg-cyan-100 flex items-center justify-center mb-3">
-            <svg className="w-5 h-5 text-cyan-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="p-5 bg-white rounded-2xl border border-slate-200 text-left hover:border-kwiq hover:shadow-xl hover:shadow-kwiq/5 transition-all group">
+          <div className="w-12 h-12 rounded-xl bg-kwiq/10 flex items-center justify-center mb-4 group-hover:bg-kwiq group-hover:text-white transition-colors">
+            <svg className="w-6 h-6 text-kwiq group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
               <line x1="3" y1="9" x2="21" y2="9" />
               <line x1="9" y1="21" x2="9" y2="9" />
             </svg>
           </div>
-          <h3 className="font-semibold text-slate-900">{t('welcomeScreen', 'feature4Title')}</h3>
-          <p className="text-sm text-slate-500 mt-1">{t('welcomeScreen', 'feature4Desc')}</p>
+          <h3 className="font-bold text-slate-900 text-lg">{t('welcomeScreen', 'feature4Title')}</h3>
+          <p className="text-sm text-slate-500 mt-2 leading-relaxed">{t('welcomeScreen', 'feature4Desc')}</p>
         </div>
       </div>
 
       <button
         onClick={onCreateProject}
-        className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-pink-600 hover:from-cyan-700 hover:to-pink-700 text-white rounded-2xl font-semibold text-lg transition-all shadow-lg shadow-cyan-200 hover:shadow-xl hover:scale-105 flex items-center gap-3"
+        className="px-10 py-5 bg-kwiq hover:bg-kwiq-dark text-white rounded-2xl font-bold text-xl transition-all shadow-xl shadow-kwiq/20 hover:shadow-2xl hover:scale-105 flex items-center gap-3"
       >
-        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
           <path d="M12 5v14M5 12h14" />
         </svg>
         {t('welcomeScreen', 'startBtn')}

@@ -86,30 +86,53 @@ ANÁLISIS DE MARCA:
 - Descripción: ${description}
 - Público objetivo: ${targetAudience || 'General'}
 ${chatContext ? `\nContexto detallado de la entrevista: ${chatContext}` : ''}
+
+ESTRATEGIA DE MARCA:
+Antes de las direcciones design, define la estrategia global:
+- brand_personality: Lista de 5 adjetivos que definen la esencia.
+- brand_positioning: Una frase que define su lugar único en el mercado.
+- brand_tone: Cómo habla la marca (ej: "Cercano pero experto").
+- target_audience: Descripción concisa del cliente ideal.
+- visual_style_guidelines: Reglas maestras de diseño que deben seguir todas las propuestas.
  
-Tu tarea: Define 5 direcciones creativas RADICALMENTE DISTINTAS entre sí para esta marca.
- 
+Tu tarea: Diseña 5 TERRITORIOS CREATIVOS RADICALMENTE DISTINTOS para esta marca. Cada propuesta debe representar un universo visual único y una estrategia de diseño diferenciada.
+
+TERRITORIOS OBLIGATORIOS (Uno por propuesta):
+1. **Minimal Tech**: Estética limpia, mucho espacio en blanco, enfoque en la funcionalidad y precisión.
+2. **Bold Startup**: Enérgico, uso de colores vibrantes, tipografías pesadas, actitud valiente y disruptiva.
+3. **Premium Elegant**: Refinado, paletas sobrias o monocromáticas, tipografías serif clásicas, sensación de lujo y exclusividad.
+4. **Friendly Modern**: Accesible, formas redondeadas, colores cálidos, tipografías amigables, enfoque en la comunidad y cercanía.
+5. **Futuristic Digital**: Innovador, gradientes complejos, efectos visuales de profundidad, tipografías geométricas experimentales.
+
 REQUERIMIENTOS POR PROPUESTA:
-1. **Nombre Creativo**: Título sugerente para la propuesta.
-2. **Mood/Estilo**: Debe ser uno de estos 5 (sin repetir): [Moderno/Tech, Clásico/Elegante, Minimalista/Puro, Audaz/Rebelde, Innovador/Futurista].
+1. **Nombre Creativo**: Título sugerente que refleje el territorio (ej: "Pureza Digital" para Minimal Tech).
+2. **Mood/Estilo**: Debe ser EXACTAMENTE el nombre del territorio asignado.
 3. **Concepto**: Explicación de 2 oraciones del porqué de este estilo para el negocio.
-4. **Paleta de Colores**: 6 colores HEX con nombres y usos (ej: Primario, Secundario, Acento, Fondo 1, Fondo 2, Complemento). Las paletas deben variar en temperatura y contraste.
-5. **Tipografías**: PAREJA ÚNICA de Google Fonts (título y cuerpo). Usa fuentes diversas como [Inter, Montserrat, Playfair Display, Roboto Mono, Sora, Outfit, Fraunces]. No repitas fuentes en las 5 propuestas.
-6. **Descripción Visual del Logo**: Detalles para un diseñador sobre formas, símbolos y composición.
-7. **Estilo de Iconografía**: Describe cómo deben ser los iconos (ej: "Líneas finas minimalistas", "3D Glassmorphism colorido", "Geométrico sólido").
+4. **Paleta de Colores**: 6 colores HEX con nombres y usos. Las paletas deben ser TOTALMENTE DIFERENTES entre propuestas (ej: No uses azules en todas).
+5. **Tipografías**: PAREJA ÚNICA de Google Fonts (título y cuerpo). Usa combinaciones contrastantes como [Inter + Montserrat], [Playfair Display + Source Sans 3], [Sora + Outfit], [Fraunces + Roboto]. No repitas fuentes entre propuestas.
+6. **Descripción Visual del Logo**: Detalles específicos sobre formas, abstracción y composición que encajen con el territorio.
+7. **Estilo de Iconografía**: Describe iconos que sigan la lógica del territorio (ej: "Líneas finas" para Minimal, "Sólidos y gruesos" para Bold).
  
 Responde ESTRICTAMENTE en este formato JSON (sin markdown, sin texto extra):
 {
+  "brandStrategy": {
+    "brand_personality": ["...", "..."],
+    "brand_positioning": "...",
+    "brand_tone": "...",
+    "target_audience": "...",
+    "visual_style_guidelines": "..."
+  },
   "proposals": [
     {
       "name": "...",
-      "mood": "...",
+      "mood": "Minimal Tech",
       "description": "...",
       "colors": [ {"name": "...", "hex": "#...", "usage": "..."} ],
       "typography": { "titulo": "Font Name", "cuerpo": "Font Name" },
       "logoDescription": "...",
       "iconStyle": "..."
-    }
+    },
+    ... (hasta completar los 5 territorios)
   ]
 }`;
 
@@ -323,6 +346,7 @@ Industry: ${industry || 'technology'}. No text, vector style, white background.`
       colors: mainProposal.colors,
       typography: mainProposal.typography,
       icons: mainProposal.icons,
+      strategy: creativeData.brandStrategy, // Include the new brand strategy
       proposals: proposals.map(p => ({
         id: p.id,
         name: p.name,
@@ -347,21 +371,19 @@ Industry: ${industry || 'technology'}. No text, vector style, white background.`
   }
 }
 
-// Helper function to generate placeholder logo
-function generatePlaceholderLogo(brandName: string, color: string): string {
-  const initial = brandName.charAt(0).toUpperCase();
+function generatePlaceholderLogo(_brandName: string, color: string): string {
   return `data:image/svg+xml;base64,${btoa(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-    <rect width="200" height="200" rx="40" fill="${color}"/>
-    <text x="100" y="140" font-family="Arial" font-size="80" font-weight="bold" fill="white" text-anchor="middle">${initial}</text>
+    <rect width="200" height="200" rx="60" fill="${color}"/>
+    <path d="M70 60 L70 140 M130 60 L90 100 L130 140 M70 100 L110 100" stroke="white" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </svg>`)}`;
 }
 
 // Helper function to generate fallback colors
 function generateFallbackColors(): BrandColor[] {
   return [
-    { name: 'Primario', hex: '#6366f1', usage: 'Color principal' },
-    { name: 'Secundario', hex: '#8b5cf6', usage: 'Elementos de apoyo' },
-    { name: 'Acento', hex: '#ec4899', usage: 'Llamadas a la acción' },
+    { name: 'Primario', hex: '#00d1b2', usage: 'Color principal' },
+    { name: 'Secundario', hex: '#00b89c', usage: 'Elementos de apoyo' },
+    { name: 'Acento', hex: '#e481a5', usage: 'Llamada a la acción' },
     { name: 'Fondo Claro', hex: '#f9fafb', usage: 'Backgrounds' },
     { name: 'Fondo Oscuro', hex: '#111827', usage: 'Texto sobre oscuro' },
     { name: 'Soporte', hex: '#ffffff', usage: 'Tarjetas' },
@@ -399,24 +421,31 @@ export async function getAIResponse(messages: { role: string; content: string }[
       history.shift();
     }
 
-    const systemInstruction = `Eres Quick Branding, un Consultor de Branding de Élite de la agencia 'Brand Genius'.
-Tu misión es guiar al usuario en una entrevista de branding 1-a-1 fluida para descubrir su esencia.
+    const systemInstruction = `Eres "Kwiq Branding", un estratega de marca de élite con años de experiencia en marketing y diseño.
+Guía al usuario en una conversación estratégica de descubrimiento para definir su identidad de marca.
 
-REGLAS DE ORO (TRABAJO CRÍTICO):
-1. **UNA SOLA PREGUNTA**: NUNCA hagas más de UNA (1) pregunta por mensaje. Si haces dos, fallas en tu misión.
-2. **SIN LISTAS NI CUESTIONARIOS**: No uses viñetas, números ni múltiples párrafos con preguntas.
-3. **DESCUBRIMIENTO DE SERVICIOS**: Es OBLIGATORIO preguntar: "¿Qué servicios o productos ofreces exactamente?" al inicio. Necesitamos esto para diseñar los iconos.
-4. **BREVEDAD EXTREMA**: Máximo 15-20 palabras por respuesta. Sé directo e incisivo.
-5. **ESTADO**: Mantén un tono profesional, minimalista y elegante.
+PRINCIPIOS DE OPERACIÓN:
+1. **UNA PREGUNTA A LA VEZ**: NUNCA realices más de una pregunta por mensaje.
+2. **BREVEDAD E IMPACTO**: Máximo 25 palabras. Sé directo, profesional, empático y autoritario.
+3. **SIN CUESTIONARIOS**: No uses listas, viñetas ni bloques de preguntas. La conversación debe ser natural y fluida.
+4. **DESCUBRIMIENTO ESTRATÉGICO**: Indaga sobre:
+   - Propósito y qué hace el negocio (Empieza por aquí).
+   - Servicios o productos específicos (OBLIGATORIO para el diseño de iconos).
+   - Público objetivo y diferenciación estratégica.
+   - Personalidad, tono y dirección visual deseada.
+5. **PRECISIÓN**: Si una respuesta es vaga, haz una pregunta de seguimiento para profundizar.
 
-FLUJO MANDATORIO:
-- Pregunta 1: Nombre de la marca y Servicios específicos.
-- Pregunta 2: Público objetivo.
-- Pregunta 3: Estilo visual deseado (Moderno, Clásico, etc.).
+FLUJO:
+- Comienza siempre descubriendo el nombre del negocio y sus servicios/productos principales.
+- Continúa con empatía y curiosidad profesional hasta que tengas una visión completa del ADN de la marca.
+- No te limites a un número fijo de preguntas; pregunta lo necesario para ser un consultor de clase mundial.
 
-FINALIZACIÓN (Solo tras tener los servicios):
-Dí EXACTAMENTE:
-"¡Excelente! Tengo una visión clara. Tu identidad de marca está lista. Haz clic en el botón **'✨ Generar Branding'** para ver las 5 propuestas exclusivas."`;
+MENSAJE DE CIERRE (MANDATORIO):
+Cuando tengas toda la información estratégica para diseñar la marca, finaliza EXACTAMENTE con este texto:
+
+"Perfecto. Ahora tengo una comprensión clara de tu marca.
+
+Haz clic en **'✨ Generar Branding'** para ver cinco propuestas estratégicas diseñadas especialmente para tu negocio."`;
 
     const { result } = await callBackend({
       type: "chat",
@@ -435,9 +464,9 @@ Dí EXACTAMENTE:
 // ===== FALLBACK FUNCTIONS (When AI not available) =====
 function generateFallbackBranding(brandName: string, description: string): BrandBranding {
   const colors: BrandColor[] = [
-    { name: 'Primario', hex: '#6366f1', usage: 'Color principal de marca' },
-    { name: 'Secundario', hex: '#8b5cf6', usage: 'Elementos de apoyo' },
-    { name: 'Acento', hex: '#ec4899', usage: 'Llamadas a la acción' },
+    { name: 'Primario', hex: '#00d1b2', usage: 'Color principal de marca' },
+    { name: 'Secundario', hex: '#00b89c', usage: 'Elementos de apoyo' },
+    { name: 'Acento', hex: '#e481a5', usage: 'Llamada a la acción' },
     { name: 'Fondo Claro', hex: '#f9fafb', usage: 'Fondos y backgrounds' },
     { name: 'Fondo Oscuro', hex: '#111827', usage: 'Texto sobre fondos oscuros' },
     { name: 'Soporte', hex: '#ffffff', usage: 'Tarjetas y contenedores' },
@@ -512,7 +541,7 @@ function getFallbackChatResponse(messages: { role: string; content: string }[]):
   const userMessageCount = messages.filter(m => m.role === 'user').length;
 
   if (userMessageCount === 0) {
-    return "¡Hola! Soy Quick Branding, tu asistente de branding. Cuéntame sobre tu empresa o marca. ¿Qué nombre tiene y a qué se dedica?";
+    return "¡Hola! Soy Kwiq Branding, tu asistente de branding. Cuéntame sobre tu empresa o marca. ¿Qué nombre tiene y a qué se dedica?";
   }
 
   if (lastMessage.includes('logo') || lastMessage.includes('diseño')) {
@@ -628,7 +657,7 @@ export async function deleteProject(id: string): Promise<void> {
 }
 
 export function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  return crypto.randomUUID();
 }
 
 // ===== API KEY MANAGEMENT (UI Compatibility) =====
