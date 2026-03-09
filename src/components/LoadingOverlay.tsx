@@ -15,10 +15,8 @@ export function LoadingOverlay({ isVisible, message }: LoadingOverlayProps) {
                 <div className="relative w-24 h-24 mb-6">
                     <div className="absolute inset-0 rounded-full border-4 border-cyan-100 dark:border-slate-700"></div>
                     <div className="absolute inset-0 rounded-full border-4 border-t-cyan-600 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
-                    <div className="absolute inset-4 rounded-full bg-gradient-to-br from-cyan-500 to-pink-600 flex items-center justify-center shadow-lg">
-                        <svg className="w-8 h-8 text-white animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                        </svg>
+                    <div className="absolute inset-4 rounded-full bg-gradient-to-br from-[#00df9a] to-[#00b894] flex items-center justify-center shadow-lg">
+                        <img src="/kwiq-logo.png" alt="Kwiq" className="w-10 h-10 object-contain animate-pulse" />
                     </div>
                 </div>
 
@@ -33,8 +31,8 @@ export function LoadingOverlay({ isVisible, message }: LoadingOverlayProps) {
                     <div className="h-full bg-cyan-600 rounded-full animate-progress-indeterminate"></div>
                 </div>
 
-                <p className="text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-semibold">
-                    Powered by Gemini 2.0 Flash
+                <p className="text-[10px] text-slate-400 mt-4 uppercase tracking-widest font-bold">
+                    Kwiq Branding AI Engine
                 </p>
             </div>
         </div>

@@ -225,15 +225,27 @@ app.post("/api/generate", async (req, res) => {
         // CHAT (Gemini)
         // ===============================
         if (type === "chat") {
-            let contents = history && history.length > 0 ? [...history] : [{ role: "user", parts: [{ text: prompt }] }];
+            const { projectId } = req.body;
+            let fullHistory = history && history.length > 0 ? [...history] : [];
+
+            // Si hay un projectId, intentar recuperar el historial real de Supabase
+            if (projectId && (!history || history.length === 0)) {
+                console.log(`📜 Recuperando historial de Supabase para proyecto ${projectId}...`);
+                const savedMessages = await storage.getChatMessages(projectId);
+                if (savedMessages.length > 0) {
+                    fullHistory = savedMessages;
+                }
+            }
+
+            // Si no hay historial ni prompt inicial, usar un prompt por defecto
+            let contents = fullHistory.length > 0 ? [...fullHistory] : [{ role: "user", parts: [{ text: prompt }] }];
 
             // REGLA CRÍTICA DE GEMINI: El historial debe empezar con un mensaje de 'user'.
-            while (contents.length > 0 && (contents[0].role === "model" || contents[0].role === "assistant")) {
+            while (contents.length > 0 && (contents[0].role === "model" || contents[0].role === "assistant" || contents[0].role === "assistant")) {
                 console.log("🧹 Limpiando mensaje inicial de asistente para cumplir con reglas de Gemini.");
                 contents.shift();
             }
 
-            // Si después de limpiar quedó vacío, usamos el prompt actual como único mensaje
             if (contents.length === 0) {
                 contents = [{ role: "user", parts: [{ text: prompt }] }];
             }
@@ -244,6 +256,12 @@ app.post("/api/generate", async (req, res) => {
                     "Eres un asistente experto en branding. Responde claro y directo.",
                 contents: contents,
             });
+
+            // Persistir mensaje del usuario y respuesta en Supabase si hay projectId
+            if (projectId && prompt) {
+                await storage.saveChatMessage(projectId, 'user', prompt);
+                await storage.saveChatMessage(projectId, 'assistant', chatResponse.text);
+            }
 
             return res.json({ result: chatResponse.text });
         }
@@ -372,7 +390,7 @@ app.get("/api/projects/:id/export/pdf", async (req, res) => {
         const doc = new PDFDocument({
             margin: 0,
             size: 'A4',
-            info: { Title: `Brand Book - ${branding.brandName}`, Author: 'Quick Branding' }
+            info: { Title: `Brand Book - ${branding.brandName}`, Author: 'Kwiq Branding' }
         });
 
         const filename = `BrandBook_${branding.brandName.replace(/\s+/g, '_')}.pdf`;
@@ -382,8 +400,8 @@ app.get("/api/projects/:id/export/pdf", async (req, res) => {
 
         doc.pipe(res);
 
-        const primaryColor = currentColors[0]?.hex || "#06b6d4";
-        const secondaryColor = currentColors[1]?.hex || "#db2777";
+        const primaryColor = currentColors[0]?.hex || "#00d1b2";
+        const secondaryColor = currentColors[1]?.hex || "#e481a5";
         const width = doc.page.width;
         const height = doc.page.height;
 
@@ -412,7 +430,7 @@ app.get("/api/projects/:id/export/pdf", async (req, res) => {
         doc.rect(0, 0, width, height).fill(primaryColor);
         doc.fillColor("white").font("Helvetica-Bold").fontSize(50).text(branding.brandName.toUpperCase(), 50, height / 2 - 50, { align: 'center', width: width - 100 });
         doc.font("Helvetica").fontSize(20).text(branding.tagline || "Brand Guidelines", 50, height / 2 + 20, { align: 'center', width: width - 100 });
-        doc.fontSize(12).text(`Creado por Quick Branding • ${new Date().toLocaleDateString()}`, 50, height - 80, { align: 'center', width: width - 100 });
+        doc.fontSize(12).text(`Creado por Kwiq Branding • ${new Date().toLocaleDateString()}`, 50, height - 80, { align: 'center', width: width - 100 });
 
         // --- PÁGINA 2: LOGOTIPO ---
         doc.addPage({ margin: 50 });

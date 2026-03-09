@@ -37,7 +37,7 @@ export const translations = {
             colors: 'Colores',
             typography: 'Tipografía',
             proposalsAvailable: 'disponibles',
-            assistantName: 'Quick Branding',
+            assistantName: 'Kwiq Branding',
             assistantSubtitle: 'Asistente de branding',
             generatingBrand: 'Generando tu Marca...',
             generateBrand: 'Generar Branding Profesional',
@@ -46,14 +46,12 @@ export const translations = {
             inputDisabled: 'Genera tu branding primero...'
         },
         brandGuide: {
-            tabs: {
-                overview: 'Resumen',
-                logo: 'Logo',
-                colors: 'Colores',
-                typography: 'Tipografía',
-                icons: 'Iconos',
-                mixer: 'Personalizar Mix'
-            },
+            tabOverview: 'Resumen',
+            tabLogo: 'Logo',
+            tabColors: 'Colores',
+            tabTypography: 'Tipografía',
+            tabIcons: 'Iconos',
+            tabMixer: 'Mixer',
             exportBranding: 'Exportar Branding',
             downloadPdf: 'PDF',
             downloadZip: 'ZIP de Contenidos',
@@ -102,7 +100,7 @@ export const translations = {
             createBtn: 'Crear Proyecto'
         },
         welcomeScreen: {
-            title: 'Bienvenido a Quick Branding',
+            title: 'Bienvenido a Kwiq Branding',
             subtitle: 'Crea la identidad visual completa de tu marca con inteligencia artificial. Logos, paletas de colores, tipografías e iconos personalizados.',
             feature1Title: 'Chat Inteligente',
             feature1Desc: 'Conversa con IA para definir tu marca',
@@ -153,7 +151,7 @@ export const translations = {
             colors: 'Colors',
             typography: 'Typography',
             proposalsAvailable: 'available',
-            assistantName: 'Quick Branding',
+            assistantName: 'Kwiq Branding',
             assistantSubtitle: 'Branding Assistant',
             generatingBrand: 'Generating your Brand...',
             generateBrand: 'Generate Professional Branding',
@@ -162,14 +160,12 @@ export const translations = {
             inputDisabled: 'Generate your branding first...'
         },
         brandGuide: {
-            tabs: {
-                overview: 'Overview',
-                logo: 'Logo',
-                colors: 'Colors',
-                typography: 'Typography',
-                icons: 'Icons',
-                mixer: 'Customize Mix'
-            },
+            tabOverview: 'Summary',
+            tabLogo: 'Logo',
+            tabColors: 'Colors',
+            tabTypography: 'Typography',
+            tabIcons: 'Icons',
+            tabMixer: 'Mixer',
             exportBranding: 'Export Branding',
             downloadPdf: 'PDF',
             downloadZip: 'Content ZIP',
@@ -218,7 +214,7 @@ export const translations = {
             createBtn: 'Create Project'
         },
         welcomeScreen: {
-            title: 'Welcome to Quick Branding',
+            title: 'Welcome to Kwiq Branding',
             subtitle: 'Create the complete visual identity of your brand with artificial intelligence. Logos, color palettes, typography, and custom icons.',
             feature1Title: 'Smart Chat',
             feature1Desc: 'Chat with AI to define your brand',
@@ -229,6 +225,120 @@ export const translations = {
             feature4Title: 'Unified Icons',
             feature4Desc: 'Consistent icon system',
             startBtn: 'Create My First Brand'
+        }
+    },
+    pt: {
+        sidebar: {
+            projects: 'Projetos',
+            new: 'Novo',
+            settings: 'Configurações',
+            help: 'Precisa de ajuda?',
+            docs: 'Consulte a documentação'
+        },
+        settings: {
+            title: 'Configuração Geral',
+            language: 'Idioma',
+            theme: 'Tema',
+            themeLight: '☀️ Claro',
+            themeDark: '🌙 Escuro',
+            themeSystem: '💻 Sistema',
+            save: 'Salvar Configuração',
+            saveSuccess: 'Configuração salva com sucesso',
+            back: 'Volver ao Dashboard'
+        },
+        projectList: {
+            newProject: 'Novo Projeto',
+            noProjects: 'Nenhum projeto encontrado',
+            createFirst: 'Crie seu primeiro projeto para começar a gerar branding com IA.',
+            draft: 'Rascunho',
+            generating: 'Gerando',
+            completed: 'Concluído',
+            exported: 'Exportado'
+        },
+        chat: {
+            viewGuide: 'Ver Guia',
+            apiKeyMissing: 'Para gerar logotipos e ícones profissionais, configure sua chave API do Google AI Studio em',
+            settingsLink: 'Configurações → Geral',
+            backToProjects: '← Voltar aos projetos',
+            projectInfo: 'Informações do Projeto',
+            status: 'Status',
+            colors: 'Cores',
+            typography: 'Tipografia',
+            proposalsAvailable: 'disponíveis',
+            assistantName: 'Kwiq Branding',
+            assistantSubtitle: 'Assistente de branding',
+            generatingBrand: 'Gerando sua Marca...',
+            generateBrand: 'Gerar Branding Profissional',
+            interviewFinished: 'Sua entrevista terminou. Clique acima para começar.',
+            inputPlaceholder: 'Digite uma mensagem...',
+            inputDisabled: 'Gere seu branding primeiro...'
+        },
+        brandGuide: {
+            tabOverview: 'Resumo',
+            tabLogo: 'Logotipo',
+            tabColors: 'Branding',
+            tabTypography: 'Tipografia',
+            tabIcons: 'Ícones',
+            tabMixer: 'Mixer',
+            exportBranding: 'Exportar Branding',
+            downloadPdf: 'PDF',
+            downloadZip: 'ZIP de Conteúdos',
+            cancel: 'Cancelar'
+        },
+        dashboard: {
+            title: 'Meus Projetos',
+            totalProjects: 'projetos no total',
+            newProject: 'Novo Projeto',
+            statsTotal: 'Total',
+            statsCompleted: 'Concluídos',
+            statsDrafts: 'Rascunhos',
+            emptyTitle: 'Nenhum projeto ainda',
+            emptySubtitle: 'Crie seu primeiro projeto de branding',
+            createProjectBtn: 'Criar Projeto'
+        },
+        colorPalette: {
+            copy: 'Copiar',
+            copied: 'Copiado!'
+        },
+        typographyDisplay: {
+            headers: 'Títulos',
+            body: 'Corpo',
+            preview: 'Prévia',
+            text: 'Texto',
+            sampleHeader: 'O rápido morcego indiano comia feliz alcachofra e kiwi.',
+            sampleBody: 'A cegonha tocava saxofone atrás do palanque de palha.'
+        },
+        iconDisplay: {
+            download: 'Baixar',
+            close: 'Fechar',
+            clickToExpand: 'Clique para ampliar',
+            noIcons: 'Nenhum ícone disponível'
+        },
+        newProjectModal: {
+            title: '🎨 Novo Projeto',
+            subtitle: 'Crie a identidade da sua marca',
+            nameLabel: 'Nome da marca *',
+            namePlaceholder: 'Ex: Minha Marca, TechStart, EcoLife...',
+            descLabel: 'Descrição da marca *',
+            descPlaceholder: 'Descreva sua marca: O que faz? Qual a missão? Público-alvo? Quais valores transmite?',
+            tipPrefix: '💡 Dica:',
+            tipText: 'Quanto mais detalhada a descrição, melhor o branding gerado.',
+            cancel: 'Cancelar',
+            creating: 'Criando...',
+            createBtn: 'Criar Projeto'
+        },
+        welcomeScreen: {
+            title: 'Bem-vindo ao Kwiq Branding',
+            subtitle: 'Crie a identidade visual completa da sua marca com inteligência artificial. Logotipos, paletas de cores, tipografias e ícones personalizados.',
+            feature1Title: 'Chat Inteligente',
+            feature1Desc: 'Converse com IA para definir sua marca',
+            feature2Title: '5 Propostas',
+            feature2Desc: 'Explore diferentes estilos de marca',
+            feature3Title: '6 Cores',
+            feature3Desc: 'Paletas completas e coordenadas',
+            feature4Title: 'Ícones Unificados',
+            feature4Desc: 'Sistema de ícones consistente',
+            startBtn: 'Criar Minha Primeira Marca'
         }
     }
 };
