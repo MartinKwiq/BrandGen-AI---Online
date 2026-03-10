@@ -96,67 +96,48 @@ Antes de las direcciones design, define la estrategia global que servirá como S
 - visual_style_guidelines: Reglas maestras de diseño que deben seguir todas las propuestas.
  
 Tu tarea: Diseña 5 TERRITORIOS CREATIVOS RADICALMENTE DISTINTOS para esta marca.
-IMPORTANTE: Cada territorio debe ser una interpretación visual coherente del BRAND DNA definido arriba. El DNA es la raíz; los territorios son las ramas.
+IMPORTANTE: El DNA es la raíz común, pero cada territorio debe ser una interpretación visual opuesta o significativamente diferente de la otra. NUNCA generes propuestas similares.
+
+REGLAS DE DIFERENCIACIÓN CRÍTICA:
+1. **Diferenciación Cromática**: Cada propuesta DEBE tener una paleta de colores con una temperatura y contraste únicos. Si una es fría, otra debe ser cálida, otra monocromática, etc. Cero overlap visual.
+2. **Diferenciación Tipográfica**: No repitas categorías de fuentes. Usa combinaciones únicas (Geo-Sans, Serif Humanista, Slab, Mono, etc.) para cada territorio.
+3. **Diferenciación Conceptual**: Los conceptos de logo deben explorar caminos distintos (ej: Abstracto vs. Literal vs. Tipográfico vs. Heráldico).
 
 DESIGN COHERENCE & COLOR PSYCHOLOGY RULES:
-- Las paletas de colores deben estar guiadas por la psicología del color y el Brand DNA:
+- Las paletas deben seguir la psicología del color vinculada al territorio:
   * Tech/Innovation: Cool blues, cyans, electric violets.
   * Premium/Luxury: Monocromáticos profundos, carbón, oro, tonos tierra refinados.
   * Friendly/Organic: Verdes claros, terracotas, amarillos cálidos, tonos pastel.
   * Bold/Startup: Colores vibrantes, alto contraste, neones acentuados.
 - Cada paleta DEBE tener exactamente 6 colores con estos roles específicos:
-  1. **Primary**: Color base de la identidad.
-  2. **Secondary**: Color de apoyo que complementa al primario.
-  3. **Accent**: Color de alto contraste para llamadas a la acción (CTA).
-  4. **Neutral Light**: Tono muy claro para fondos de tarjetas o superficies.
-  5. **Neutral Dark**: Tono oscuro para textos y contrastes profundos.
-  6. **Background**: Tono base para el fondo de la interface.
+  1. **Primary**: Identidad. 2. **Secondary**: Apoyo. 3. **Accent**: CTA. 4. **Neutral Light**: Superficies. 5. **Neutral Dark**: Texto. 6. **Background**: Fondo interfaz.
 
-TYPOGRAPHY & HIERARCHY RULES:
-- Las parejas de fuentes (Headline + Body) deben ser profesionales, legibles y estar alineadas al Brand DNA:
-  * Minimal Tech: Sans-serif geométricas modernas (ej: Inter + Montserrat, Sora + Outfit).
-  * Premium Elegant: Serif refinadas + sans-serif elegantes (ej: Playfair Display + Source Sans 3, Fraunces + Roboto).
-  * Friendly Modern: Sans-serif redondeadas o amigables (ej: Quicksand + Open Sans, Nunito + DM Sans).
-  * Futuristic Digital: Sans-serif experimentales o geométricas digitales (ej: Rajdhani + Exo 2, Michroma + Prompt).
-- Asegura un contraste visual claro entre el título y el cuerpo para mantener una jerarquía fuerte.
-- Usa SOLO fuentes de Google Fonts reales.
+TYPOGRAPHY RULES:
+- Parejas Headline + Body de Google Fonts. Prohibido usar "Inter" o "Open Sans" en todas las propuestas. Varía radicalmente.
 
-TERRITORIOS OBLIGATORIOS (Uno por propuesta):
-1. **Minimal Tech**: Estética limpia, enfoque en funcionalidad y precisión. Colores fríos. Tipografía sans-serif geométrica.
-2. **Bold Startup**: Enérgico, colores vibrantes, actitud valiente. Tipografías pesadas y disruptivas.
-3. **Premium Elegant**: Refinado, paletas sobrias, sensación de lujo. Combinación Serif + Sans-serif sofisticada.
-4. **Friendly Modern**: Accesible, formas redondeadas, colores cálidos. Tipografía amigable y cercana.
-5. **Futuristic Digital**: Innovador, colores experimentales. Tipografía digital o experimental moderna.
+TERRITORIOS OBLIGATORIOS (Diferenciación Extrema):
+1. **Minimal Tech**: Funcionalidad, precisión, mucho aire, colores fríos, Sans-Serif Geométrica.
+2. **Bold Startup**: Ruido visual positivo, colores vibrantes, tipografía pesada, concepto disruptivo.
+3. **Premium Elegant**: Silencio visual, lujo, paleta sobria (negros, crema, oro), combinación Serif + Sans sofisticada.
+4. **Friendly Modern**: Humano, cercano, formas orgánicas o redondeadas, colores cálidos y acogedores.
+5. **Futuristic Digital**: Experimental, gradientes extremos (en descripción), tipografía digital, estética Cyber/Next-Gen.
 
 REQUERIMIENTOS POR PROPUESTA:
-1. **Nombre Creativo**: Título sugerente que refleje el territorio.
-2. **Mood/Estilo**: Debe ser EXACTAMENTE el nombre del territorio asignado.
-3. **Concepto**: Porqué este estilo y paleta encajan con el Brand DNA (psicología).
-4. **Paleta de Colores**: 6 colores HEX siguiendo los roles definidos (Primary, Secondary, Accent, Neutral Light, Neutral Dark, Background).
-5. **Tipografías**: PAREJA ÚNICA de Google Fonts coherente con el territorio.
-6. **Descripción Visual del Logo**: Detalles específicos que sigan la lógica del DNA.
-7. **Estilo de Iconografía**: Describe iconos que sigan la lógica del territorio.
+1. **Name**: Título sugerente. 2. **Mood**: Nombre del territorio. 3. **Description**: Porqué encaja con el DNA. 4. **Colors**: 6 Hex con roles. 5. **Typography**: Pareja única (titulo/cuerpo). 6. **LogoDescription**: Concepto visual distinto. 7. **IconStyle**: Estilo único.
  
-Responde ESTRICTAMENTE en este formato JSON (sin markdown, sin texto extra):
+Responde ESTRICTAMENTE en este formato JSON:
 {
   "brandStrategy": {
-    "brand_personality": ["...", "..."],
-    "brand_positioning": "...",
-    "brand_tone": "...",
-    "target_audience": "...",
-    "visual_style_guidelines": "..."
+    "brand_personality": [], "brand_positioning": "", "brand_tone": "", "target_audience": "", "visual_style_guidelines": ""
   },
   "proposals": [
     {
-      "name": "...",
-      "mood": "Minimal Tech",
-      "description": "...",
-      "colors": [ {"name": "...", "hex": "#...", "usage": "..."} ],
+      "name": "", "mood": "Minimal Tech", "description": "",
+      "colors": [ {"name": "", "hex": "", "usage": ""} ],
       "typography": { "titulo": "Font Name", "cuerpo": "Font Name" },
-      "logoDescription": "...",
-      "iconStyle": "..."
+      "logoDescription": "", "iconStyle": ""
     },
-    ... (hasta completar los 5 territorios)
+    ... (5 territorios)
   ]
 }`;
 
