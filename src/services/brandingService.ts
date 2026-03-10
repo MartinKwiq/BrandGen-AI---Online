@@ -87,15 +87,21 @@ ANÁLISIS DE MARCA:
 - Público objetivo: ${targetAudience || 'General'}
 ${chatContext ? `\nContexto detallado de la entrevista: ${chatContext}` : ''}
 
-ESTRATEGIA DE MARCA:
-Antes de las direcciones design, define la estrategia global:
+ESTRATEGIA DE MARCA (EL "BRAND DNA"):
+Antes de las direcciones design, define la estrategia global que servirá como SOURCE OF TRUTH para todos los activos:
 - brand_personality: Lista de 5 adjetivos que definen la esencia.
 - brand_positioning: Una frase que define su lugar único en el mercado.
 - brand_tone: Cómo habla la marca (ej: "Cercano pero experto").
 - target_audience: Descripción concisa del cliente ideal.
 - visual_style_guidelines: Reglas maestras de diseño que deben seguir todas las propuestas.
  
-Tu tarea: Diseña 5 TERRITORIOS CREATIVOS RADICALMENTE DISTINTOS para esta marca. Cada propuesta debe representar un universo visual único y una estrategia de diseño diferenciada.
+Tu tarea: Diseña 5 TERRITORIOS CREATIVOS RADICALMENTE DISTINTOS para esta marca.
+IMPORTANTE: Cada territorio debe ser una interpretación visual coherente del BRAND DNA definido arriba. El DNA es la raíz; los territorios son las ramas.
+
+DESIGN COHERENCE RULES:
+- Una personalidad "Minimal Tech" DEBE usar colores fríos/tecnológicos y fuentes sans-serif geométricas.
+- Una personalidad "Premium Elegant" DEBE usar colores sobrios y fuentes serif clásicas.
+- Todas las elecciones de color y tipografía deben estar justificadas por el Brand DNA.
 
 TERRITORIOS OBLIGATORIOS (Uno por propuesta):
 1. **Minimal Tech**: Estética limpia, mucho espacio en blanco, enfoque en la funcionalidad y precisión.
@@ -105,13 +111,13 @@ TERRITORIOS OBLIGATORIOS (Uno por propuesta):
 5. **Futuristic Digital**: Innovador, gradientes complejos, efectos visuales de profundidad, tipografías geométricas experimentales.
 
 REQUERIMIENTOS POR PROPUESTA:
-1. **Nombre Creativo**: Título sugerente que refleje el territorio (ej: "Pureza Digital" para Minimal Tech).
+1. **Nombre Creativo**: Título sugerente que refleje el territorio.
 2. **Mood/Estilo**: Debe ser EXACTAMENTE el nombre del territorio asignado.
-3. **Concepto**: Explicación de 2 oraciones del porqué de este estilo para el negocio.
-4. **Paleta de Colores**: 6 colores HEX con nombres y usos. Las paletas deben ser TOTALMENTE DIFERENTES entre propuestas (ej: No uses azules en todas).
-5. **Tipografías**: PAREJA ÚNICA de Google Fonts (título y cuerpo). Usa combinaciones contrastantes como [Inter + Montserrat], [Playfair Display + Source Sans 3], [Sora + Outfit], [Fraunces + Roboto]. No repitas fuentes entre propuestas.
-6. **Descripción Visual del Logo**: Detalles específicos sobre formas, abstracción y composición que encajen con el territorio.
-7. **Estilo de Iconografía**: Describe iconos que sigan la lógica del territorio (ej: "Líneas finas" para Minimal, "Sólidos y gruesos" para Bold).
+3. **Concepto**: Explicación de 2 oraciones del porqué de este estilo para el negocio basándote en el Brand DNA.
+4. **Paleta de Colores**: 6 colores HEX coherentes con el territorio y el DNA.
+5. **Tipografías**: PAREJA ÚNICA de Google Fonts coherente con el territorio.
+6. **Descripción Visual del Logo**: Detalles específicos que sigan la lógica del DNA.
+7. **Estilo de Iconografía**: Describe iconos que sigan la lógica del territorio.
  
 Responde ESTRICTAMENTE en este formato JSON (sin markdown, sin texto extra):
 {
@@ -171,6 +177,15 @@ Responde ESTRICTAMENTE en este formato JSON (sin markdown, sin texto extra):
       throw new Error("No se generaron propuestas desde el backend");
     }
 
+    // ===== UNIFIED BRAND DNA LAYER =====
+    const strategy = creativeData.brandStrategy || {};
+    const brandDNA = {
+      personality: strategy.brand_personality || [],
+      positioning: strategy.brand_positioning || "Elite brand positioning",
+      audience: strategy.target_audience || "Targeted professional audience",
+      visualGuidelines: strategy.visual_style_guidelines || "Modern and professional aesthetic"
+    };
+
     for (let i = 0; i < Math.min(5, directions.length); i++) {
       const direction = directions[i];
 
@@ -219,17 +234,16 @@ Responde ESTRICTAMENTE en este formato JSON (sin markdown, sin texto extra):
 
       if (i === 0) {
         onStep?.('Generando logotipos principales...');
-        const strategy = creativeData.brandStrategy || {};
         const logoPrompt = `
 Conceptual brand symbol for "${brandName}".
 Territory: ${normalizedDirection.name} (${normalizedDirection.mood}).
 Concept: ${normalizedDirection.visualDescription}.
 
-STRATEGIC CONTEXT:
-- Personality: ${strategy.brand_personality?.join(', ') || 'N/A'}. 
-- Positioning: ${strategy.brand_positioning || 'N/A'}.
-- Visual Rules: ${strategy.visual_style_guidelines || 'N/A'}.
-- Audience: ${strategy.target_audience || 'N/A'}.
+BRAND DNA (IDENTITY ROOT):
+- Personality: ${brandDNA.personality.join(', ')}. 
+- Positioning: ${brandDNA.positioning}.
+- Audience: ${brandDNA.audience}.
+- Visual Rules: ${brandDNA.visualGuidelines}.
 
 DESIGN SPECS:
 - Style: Modern, minimal, vector style, flat design.
@@ -292,19 +306,23 @@ DESIGN SPECS:
           const primaryHex = normalizedDirection.colors?.[0]?.hex || '#6366f1';
 
           const iconPrompt = `
-            Diseña un icono de interface de usuario (UI) para el servicio: "${def.name}".
-            Concepto Visual: ${def.description || def.name}.
-            Directrices Estratégicas: ${creativeData.brandStrategy?.visual_style_guidelines || 'Modern and professional'}.
-            Estilo de Sistema: ${normalizedDirection.iconStyle}.
-            
-            REGLAS DE COHERENCIA (Familia de Iconos):
-            1. **Uniformes**: Este icono DEBE pertenecer a una familia de 6 iconos. Usa el mismo grosor de línea (stroke), mismo lenguaje geométrico y mismo nivel de detalle que un set profesional de iconos (estilo Phosphor o Lucide).
-            2. **Estética**: Estilo vector limpio, minimalista y escalable.
-            3. **Color**: Usa gradientes suaves basados en ${primaryHex}.
-            4. **Fondo**: Centrado en un lienzo blanco limpio o transparente. Sin bordes innecesarios.
-            5. **Prohibido**: NO incluyas texto, letras, ni sombras fotorealistas. No uses fondos complejos.
-            6. **Output**: Ilustración digital de alta calidad, estilo profesional para aplicaciones modernas.
-          `;
+Diseña un icono de interface de usuario (UI) para el servicio: "${def.name}".
+Concepto Visual: ${def.description || def.name}.
+Territorio Creativo: ${normalizedDirection.name} (${normalizedDirection.mood}).
+
+BRAND DNA (Source of Truth):
+- Personality: ${brandDNA.personality.join(', ')}.
+- Positioning: ${brandDNA.positioning}.
+- Visual Guidelines: ${brandDNA.visualGuidelines}.
+
+REGLAS DE COHERENCIA (Familia de Iconos):
+1. **Uniformes**: Este icono DEBE pertenecer a una familia de 6 iconos. Usa el mismo grosor de línea (stroke), mismo lenguaje geométrico y mismo nivel de detalle que un set profesional de iconos (estilo Phosphor o Lucide).
+2. **Estética**: Estilo vector limpio, minimalista y escalable.
+3. **Color**: Usa gradientes suaves basados en ${primaryHex}.
+4. **Fondo**: Centrado en un lienzo blanco limpio o transparente. Sin bordes innecesarios.
+5. **Prohibido**: NO incluyas texto, letras, ni sombras fotorealistas. No uses fondos complejos.
+6. **Output**: Ilustración digital de alta calidad, estilo profesional para aplicaciones modernas.
+`.trim();
 
           try {
             const iconRes = await callBackend({
