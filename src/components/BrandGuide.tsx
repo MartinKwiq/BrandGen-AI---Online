@@ -22,6 +22,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
 
   const sections = [
     { id: 'guideline', label: 'Guía de Marca', icon: '📖' },
+    { id: 'mockups', label: 'Aplicaciones', icon: '🖼️' },
     { id: 'logo', label: t('brandGuide', 'tabLogo'), icon: '🎨' },
     { id: 'colors', label: t('brandGuide', 'tabColors'), icon: '🎭' },
     { id: 'typography', label: t('brandGuide', 'tabTypography'), icon: '✍️' },
@@ -487,6 +488,171 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 Un conjunto de {branding.icons.length} iconos diseñados con un estilo concordante para mantener la consistencia visual de tu marca.
               </p>
               <IconSet icons={branding.icons} color={currentColors[0].hex} />
+            </div>
+          </div>
+        );
+
+      case 'mockups':
+        return (
+          <div className="space-y-16 animate-fade-in pb-20">
+            {/* 1. Website Hero Mockup */}
+            <section className="space-y-6">
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                <span className="w-10 h-10 rounded-xl bg-cyan-500 text-white flex items-center justify-center text-lg">W</span>
+                Website Experience
+              </h2>
+              <div className="bg-white rounded-[2.5rem] p-4 shadow-2xl border border-slate-200 overflow-hidden">
+                <div className="bg-slate-50 border-b border-slate-200 p-3 flex items-center gap-2 rounded-t-[2rem]">
+                  <div className="flex gap-1.5 px-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                  </div>
+                  <div className="flex-1 max-w-md mx-auto h-6 bg-white rounded-md border border-slate-200 flex items-center px-3 text-[10px] text-slate-400 font-mono italic">
+                    https://{branding.brandName.toLowerCase().replace(/\s+/g, '')}.com
+                  </div>
+                </div>
+                <div
+                  className="min-h-[400px] flex flex-col"
+                  style={{ backgroundColor: currentColors[5].hex }}
+                >
+                  <nav className="p-6 flex items-center justify-between border-b border-black/5">
+                    <div className="h-8 w-auto">
+                      {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
+                        <img src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo} className="h-full object-contain" alt="Logo" />
+                      ) : (
+                        <div className="h-full" dangerouslySetInnerHTML={{ __html: branding.logo.replace(/width="\d+"/, 'height="100%"') }} />
+                      )}
+                    </div>
+                    <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-slate-900" style={{ fontFamily: currentTypo.body.fontFamily }}>
+                      <span>Home</span>
+                      <span>Product</span>
+                      <span>About</span>
+                      <button className="px-6 py-2 rounded-full text-white transition-opacity hover:opacity-90" style={{ backgroundColor: currentColors[0].hex }}>Start</button>
+                    </div>
+                  </nav>
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-6">
+                    <h1 className="text-6xl font-black text-slate-900 leading-[1.1] max-w-3xl" style={{ fontFamily: currentTypo.heading.fontFamily }}>
+                      Elevate your <span style={{ color: currentColors[0].hex }}>digital journey</span> today.
+                    </h1>
+                    <p className="text-slate-500 text-lg max-w-xl" style={{ fontFamily: currentTypo.body.fontFamily }}>
+                      Revolutionizing the industry with a focus on {branding.tagline.toLowerCase()}.
+                    </p>
+                    <div className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white shadow-lg border border-slate-100" style={{ color: currentColors[2].hex }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* 2. Mobile Mockup */}
+              <section className="space-y-6">
+                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-pink-500 text-white flex items-center justify-center text-lg">M</span>
+                  Mobile Interface
+                </h2>
+                <div className="flex justify-center">
+                  <div className="w-[280px] h-[580px] bg-slate-900 rounded-[3rem] p-3 shadow-2xl relative border-[6px] border-slate-800">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-slate-900 rounded-b-2xl z-20" />
+                    <div
+                      className="w-full h-full rounded-[2.2rem] overflow-hidden flex flex-col"
+                      style={{ backgroundColor: currentColors[5].hex }}
+                    >
+                      <div className="h-32 p-6 flex items-end" style={{ backgroundColor: currentColors[0].hex }}>
+                        <div className="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center text-white">
+                          {branding.icons[0] && (
+                            <div className="w-6 h-6" dangerouslySetInnerHTML={{ __html: branding.icons[0].svg.replace(/currentColor/g, '#fff') }} />
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-1 p-6 space-y-6">
+                        <div className="space-y-2">
+                          <div className="h-6 w-3/4 bg-slate-900/10 rounded-md" />
+                          <h4 className="text-xl font-black text-slate-900" style={{ fontFamily: currentTypo.heading.fontFamily }}>Upcoming Tasks</h4>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          {branding.icons.slice(1, 5).map((icon, i) => (
+                            <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${currentColors[i + 1]?.hex || currentColors[0].hex}15`, color: currentColors[i + 1]?.hex || currentColors[0].hex }}>
+                                <div className="w-5 h-5 font-bold" dangerouslySetInnerHTML={{ __html: icon.svg }} />
+                              </div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{icon.name}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="h-20 bg-white border-t border-slate-100 px-6 flex items-center justify-between">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ color: currentColors[0].hex }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+                        </div>
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg text-white" style={{ backgroundColor: currentColors[0].hex }}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" /></svg>
+                        </div>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-slate-300">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* 3. Social Media & Card Mockup */}
+              <div className="space-y-12">
+                <section className="space-y-6">
+                  <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center text-lg">S</span>
+                    Social Presence
+                  </h2>
+                  <div className="bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
+                    <div className="relative">
+                      <div className="h-32 w-full rounded-2xl bg-gradient-to-r" style={{ backgroundImage: `linear-gradient(to right, ${currentColors[0].hex}, ${currentColors[1].hex})` }} />
+                      <div className="absolute -bottom-10 left-6 w-20 h-20 rounded-2xl bg-white p-1.5 shadow-xl">
+                        <div className="w-full h-full rounded-xl flex items-center justify-center overflow-hidden bg-slate-900">
+                          {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
+                            <img src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo} className="w-12 h-12 object-contain" alt="Ava" />
+                          ) : (
+                            <div className="w-12 h-12" dangerouslySetInnerHTML={{ __html: branding.logo }} />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-14 space-y-1 px-2">
+                      <h3 className="text-xl font-black text-slate-900" style={{ fontFamily: currentTypo.heading.fontFamily }}>{branding.brandName}</h3>
+                      <p className="text-cyan-600 font-bold text-xs uppercase tracking-widest">@{branding.brandName.toLowerCase().replace(/\s+/g, '')}</p>
+                      <p className="text-slate-500 text-sm mt-3 leading-relaxed" style={{ fontFamily: currentTypo.body.fontFamily }}>
+                        {branding.tagline}. Professional solution for modern businesses.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="space-y-6">
+                  <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center text-lg">B</span>
+                    Personal Branding
+                  </h2>
+                  <div className="bg-slate-100 rounded-3xl p-8 flex flex-col items-center gap-6">
+                    <div className="w-full max-w-sm aspect-[1.75/1] bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden relative group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-slate-900 rounded-bl-[100px] transition-all group-hover:w-full group-hover:h-full group-hover:rounded-none group-hover:opacity-10 opacity-5" />
+                      <div className="h-full flex flex-col justify-between p-8 relative z-10">
+                        <div className="h-10 w-auto">
+                          <div className="h-full flex items-center" dangerouslySetInnerHTML={{ __html: branding.logo.replace(/currentColor/g, currentColors[0].hex).replace(/width="\d+"/, 'height="100%"') }} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mb-1">Corporate Identity</p>
+                          <h4 className="text-lg font-black text-slate-900" style={{ fontFamily: currentTypo.heading.fontFamily }}>{branding.brandName}</h4>
+                        </div>
+                      </div>
+                      <div className="absolute bottom-0 right-0 w-2 h-full" style={{ backgroundColor: currentColors[2].hex }} />
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
           </div>
         );
