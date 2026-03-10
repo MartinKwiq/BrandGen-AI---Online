@@ -112,12 +112,21 @@ DESIGN COHERENCE & COLOR PSYCHOLOGY RULES:
   5. **Neutral Dark**: Tono oscuro para textos y contrastes profundos.
   6. **Background**: Tono base para el fondo de la interface.
 
+TYPOGRAPHY & HIERARCHY RULES:
+- Las parejas de fuentes (Headline + Body) deben ser profesionales, legibles y estar alineadas al Brand DNA:
+  * Minimal Tech: Sans-serif geométricas modernas (ej: Inter + Montserrat, Sora + Outfit).
+  * Premium Elegant: Serif refinadas + sans-serif elegantes (ej: Playfair Display + Source Sans 3, Fraunces + Roboto).
+  * Friendly Modern: Sans-serif redondeadas o amigables (ej: Quicksand + Open Sans, Nunito + DM Sans).
+  * Futuristic Digital: Sans-serif experimentales o geométricas digitales (ej: Rajdhani + Exo 2, Michroma + Prompt).
+- Asegura un contraste visual claro entre el título y el cuerpo para mantener una jerarquía fuerte.
+- Usa SOLO fuentes de Google Fonts reales.
+
 TERRITORIOS OBLIGATORIOS (Uno por propuesta):
-1. **Minimal Tech**: Estética limpia, enfoque en funcionalidad y precisión. Colores fríos.
-2. **Bold Startup**: Enérgico, colores vibrantes, actitud valiente. Alto contraste psicodélico o moderno.
-3. **Premium Elegant**: Refinado, paletas sobrias, sensación de lujo. Contraste sutil y sofisticado.
-4. **Friendly Modern**: Accesible, formas redondeadas, colores cálidos y amigables.
-5. **Futuristic Digital**: Innovador, gradientes sugeridos, colores experimentales y digitales.
+1. **Minimal Tech**: Estética limpia, enfoque en funcionalidad y precisión. Colores fríos. Tipografía sans-serif geométrica.
+2. **Bold Startup**: Enérgico, colores vibrantes, actitud valiente. Tipografías pesadas y disruptivas.
+3. **Premium Elegant**: Refinado, paletas sobrias, sensación de lujo. Combinación Serif + Sans-serif sofisticada.
+4. **Friendly Modern**: Accesible, formas redondeadas, colores cálidos. Tipografía amigable y cercana.
+5. **Futuristic Digital**: Innovador, colores experimentales. Tipografía digital o experimental moderna.
 
 REQUERIMIENTOS POR PROPUESTA:
 1. **Nombre Creativo**: Título sugerente que refleje el territorio.
