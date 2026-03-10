@@ -16,12 +16,12 @@ const BACKEND_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:5
 
 export function BrandGuide({ branding, projectId }: BrandGuideProps) {
   const { currentProject, updateProject } = useBrand();
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeSection, setActiveSection] = useState('guideline');
   const [showExportModal, setShowExportModal] = useState(false);
   const { t } = useTranslation();
 
   const sections = [
-    { id: 'overview', label: t('brandGuide', 'tabOverview'), icon: '✨' },
+    { id: 'guideline', label: 'Guía de Marca', icon: '📖' },
     { id: 'logo', label: t('brandGuide', 'tabLogo'), icon: '🎨' },
     { id: 'colors', label: t('brandGuide', 'tabColors'), icon: '🎭' },
     { id: 'typography', label: t('brandGuide', 'tabTypography'), icon: '✍️' },
@@ -36,89 +36,202 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'overview':
+      case 'guideline':
+        const selectedProposal = branding.proposals.find(p => p.id === (branding.selectedComponents?.moodProposalId || branding.selectedProposalId || branding.proposals[0].id)) || branding.proposals[0];
+
         return (
-          <div className="space-y-6 animate-fade-in">
-            {/* Brand Header */}
-            <div className="bg-gradient-to-r from-cyan-600 to-pink-600 rounded-2xl p-8 text-white">
-              <div className="flex items-center gap-6">
-                {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
-                  <img
-                    src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo}
-                    alt={`${branding.brandName} logo`}
-                    className="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur object-contain p-2"
-                  />
-                ) : (
-                  <div
-                    className="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-white text-4xl font-bold"
-                    dangerouslySetInnerHTML={{ __html: branding.logo }}
-                  />
-                )}
-                <div>
-                  <h1 className="text-4xl font-bold">{branding.brandName}</h1>
-                  <p className="text-xl text-white/80 mt-1">{branding.tagline}</p>
-                  <p className="text-white/60 mt-2">{branding.proposals.length} propuestas de branding generadas</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Overview */}
-            <div className="grid md:grid-cols-3 gap-4">
-              <div
-                className="bg-white rounded-xl p-4 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setActiveSection('colors')}
-              >
-                <p className="text-sm text-slate-500 mb-2">🎨 Paleta</p>
-                <div className="flex -space-x-2">
-                  {currentColors.slice(0, 4).map((c, i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white" style={{ backgroundColor: c.hex }} />
-                  ))}
-                </div>
-                <p className="text-xs text-slate-400 mt-2">{currentColors.length} colores</p>
-              </div>
-
-              <div
-                className="bg-white rounded-xl p-4 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setActiveSection('typography')}
-              >
-                <p className="text-sm text-slate-500 mb-2">✍️ Tipografía</p>
-                <p className="font-semibold text-slate-800">{currentTypo.heading.name}</p>
-                <p className="text-xs text-slate-400 mt-1">{currentTypo.body.name}</p>
-              </div>
-
-              <div
-                className="bg-white rounded-xl p-4 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => setActiveSection('icons')}
-              >
-                <p className="text-sm text-slate-500 mb-2">⬡ Iconos</p>
-                <p className="font-semibold text-slate-800">{branding.icons.length} iconos</p>
-                <p className="text-xs text-slate-400 mt-1">Estilo concordante</p>
-              </div>
-            </div>
-
-            {/* Proposals Overview */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-800 mb-4">✨ Propuestas ({branding.proposals.length})</h3>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                {branding.proposals.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => {
-                      setActiveSection('mixer');
-                    }}
-                    className="p-3 rounded-xl border border-slate-200 hover:border-cyan-500 hover:shadow-md cursor-pointer transition-all"
-                  >
-                    <div className="flex -space-x-1 mb-2">
-                      {p.colorScheme.slice(0, 3).map((c, i) => (
-                        <div key={i} className="w-4 h-4 rounded-full border border-white" style={{ backgroundColor: c }} />
+          <div className="space-y-12 animate-fade-in pb-20">
+            {/* 1. Brand Overview & DNA */}
+            <section className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-cyan-500/10 to-pink-500/10 rounded-full blur-3xl -mr-20 -mt-20" />
+              <div className="relative z-10">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                  <div>
+                    <span className="text-cyan-600 font-bold tracking-widest text-sm uppercase mb-2 block">Brand Identity</span>
+                    <h1 className="text-5xl font-black text-slate-900 tracking-tight">{branding.brandName}</h1>
+                    <p className="text-xl text-slate-500 mt-2 font-medium italic">"{branding.tagline}"</p>
+                  </div>
+                  {branding.strategy && (
+                    <div className="flex flex-wrap gap-2">
+                      {branding.strategy.brand_personality.map((p, i) => (
+                        <span key={i} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold uppercase tracking-wider">
+                          {p}
+                        </span>
                       ))}
                     </div>
-                    <p className="text-sm font-medium text-slate-800 truncate">{p.name}</p>
-                    <p className="text-xs text-slate-500 capitalize">{p.mood}</p>
+                  )}
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-12">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-600 text-sm">🎯</span>
+                      Posicionamiento
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed text-lg">
+                      {branding.strategy?.brand_positioning || "Identidad estratégica única enfocada en la innovación y excelencia visual."}
+                    </p>
                   </div>
-                ))}
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-lg bg-pink-100 flex items-center justify-center text-pink-600 text-sm">👥</span>
+                      Audiencia Objetivo
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed text-lg">
+                      {branding.strategy?.target_audience || "Público moderno que valora el diseño de vanguardia y la funcionalidad intuitiva."}
+                    </p>
+                  </div>
+                </div>
               </div>
+            </section>
+
+            {/* 2. Logo Universe */}
+            <section className="space-y-6">
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                <span className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-lg">L</span>
+                Universo de Logo
+              </h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 bg-slate-900 rounded-3xl p-12 flex items-center justify-center min-h-[400px] shadow-2xl relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+                  <div className="relative z-10 transition-transform duration-500 group-hover:scale-110">
+                    {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
+                      <img
+                        src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo}
+                        alt={branding.brandName}
+                        className="max-w-[280px] h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-white/5 p-8 rounded-[40px] backdrop-blur-sm border border-white/10"
+                      />
+                    ) : (
+                      <div
+                        className="max-w-xs w-full drop-shadow-2xl"
+                        dangerouslySetInnerHTML={{ __html: branding.logo }}
+                      />
+                    )}
+                  </div>
+                  <div className="absolute bottom-6 left-8">
+                    <p className="text-white/40 text-xs font-mono uppercase tracking-[0.3em]">Primary Symbol / Master Logo</p>
+                  </div>
+                </div>
+                <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex flex-col justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-cyan-600 uppercase tracking-widest mb-2 block">Creative Direction</span>
+                    <h3 className="text-2xl font-black text-slate-900 mb-4">{selectedProposal.name}</h3>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-slate-50 rounded-2xl">
+                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">Mood / Feeling</p>
+                        <p className="text-slate-700 font-medium capitalize">{selectedProposal.mood}</p>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-2xl">
+                        <p className="text-xs font-bold text-slate-400 uppercase mb-1">Visual Concept</p>
+                        <p className="text-slate-600 text-sm leading-relaxed">{selectedProposal.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex -space-x-2">
+                      <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-900 shadow-sm" />
+                      <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-400 shadow-sm" />
+                      <div className="w-8 h-8 rounded-full border-2 border-white bg-white shadow-sm" />
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-400">VER. 1.0</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 3. Master Palette & 4. Typography */}
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* Palette */}
+              <section className="space-y-6">
+                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center text-lg">P</span>
+                  Sistema Cromático
+                </h2>
+                <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
+                  <div className="grid grid-cols-2 gap-3 mb-8">
+                    {currentColors.slice(0, 4).map((c, i) => (
+                      <div key={i} className="group relative">
+                        <div className="aspect-[4/3] rounded-2xl shadow-inner transition-transform group-hover:scale-[1.02]" style={{ backgroundColor: c.hex }} />
+                        <div className="mt-3">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter">{c.name}</p>
+                          <p className="text-sm font-black text-slate-800 font-mono">{c.hex.toUpperCase()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 pt-6 border-t border-slate-100">
+                    {currentColors.slice(4, 6).map((c, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl border border-slate-200 shadow-sm" style={{ backgroundColor: c.hex }} />
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">{c.name}</p>
+                          <p className="text-xs font-black text-slate-700 font-mono">{c.hex.toUpperCase()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Typography */}
+              <section className="space-y-6">
+                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-lg">T</span>
+                  Arquitectura Tipográfica
+                </h2>
+                <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 h-full flex flex-col justify-between">
+                  <div className="space-y-8">
+                    <div>
+                      <span className="px-3 py-1 bg-cyan-100 text-cyan-700 text-[10px] font-bold rounded-lg uppercase tracking-wider mb-4 inline-block">Headline / Primary</span>
+                      <h3 className="text-4xl font-black text-slate-900 leading-tight mb-2 truncate" style={{ fontFamily: currentTypo.heading.fontFamily }}>
+                        {currentTypo.heading.name}
+                      </h3>
+                      <p className="text-slate-500 font-medium text-sm">Uso principal para títulos, encabezados y elementos de alto impacto.</p>
+                    </div>
+                    <div>
+                      <span className="px-3 py-1 bg-pink-100 text-pink-700 text-[10px] font-bold rounded-lg uppercase tracking-wider mb-4 inline-block">Body / Secondary</span>
+                      <p className="text-lg text-slate-700 leading-relaxed mb-2" style={{ fontFamily: currentTypo.body.fontFamily }}>
+                        {currentTypo.body.name} - Diseñada para legibilidad óptima en bloques de texto y contenido extenso.
+                      </p>
+                      <p className="text-slate-400 text-xs italic">ABCDEFGHIJKLMNÑOPQRSTUVWXYZ / abcdefghijklmnñopqrstuvwxyz</p>
+                    </div>
+                  </div>
+                  <div className="mt-8 pt-6 border-t border-slate-100">
+                    <p className="text-[10px] font-mono text-slate-400 text-right uppercase tracking-[0.2em]">Google Fonts Hierarchy System</p>
+                  </div>
+                </div>
+              </section>
             </div>
+
+            {/* 5. Icon System */}
+            <section className="space-y-6">
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 text-white flex items-center justify-center text-lg">I</span>
+                Sistema Visual de Iconos
+              </h2>
+              <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100">
+                <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+                  {branding.icons.map((icon, i) => (
+                    <div key={i} className="aspect-square bg-slate-50 rounded-2xl flex items-center justify-center group hover:bg-cyan-500 transition-all duration-300">
+                      {icon.svg.startsWith('/') || icon.svg.startsWith('http') || icon.svg.startsWith('data:') ? (
+                        <img src={icon.svg.startsWith('/') ? `${BACKEND_URL}${icon.svg}` : icon.svg} alt={icon.name} className="w-10 h-10 object-contain group-hover:invert group-hover:brightness-200 transition-all" />
+                      ) : (
+                        <div
+                          className="w-10 h-10 text-slate-400 group-hover:text-white transition-all"
+                          dangerouslySetInnerHTML={{ __html: icon.svg.replace(/width="\d+"/, 'width="100%"').replace(/height="\d+"/, 'height="100%"') }}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-200 md:w-fit">
+                  <p className="text-xs font-bold text-slate-500 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full animate-pulse bg-cyan-500" />
+                    Estilo visual coherente basado en el Brand DNA '{selectedProposal.mood}'
+                  </p>
+                </div>
+              </div>
+            </section>
           </div>
         );
 
