@@ -30,6 +30,76 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
     { id: 'mixer', label: t('brandGuide', 'tabMixer'), icon: '⚙️' },
   ];
 
+  // CENTRALIZED FINAL BRAND SYSTEM BUILDER
+  const getFinalBrandSystem = () => {
+    const components = branding.selectedComponents;
+
+    // 1. Base Strategy & Main Terrace
+    const selectedProposalId = components?.moodProposalId || branding.selectedProposalId || branding.proposals[0].id;
+    const selectedProposal = branding.proposals.find(p => p.id === selectedProposalId) || branding.proposals[0];
+
+    // 2. Resolve Logo
+    let logo = branding.logo;
+    if (components?.logoProposalId) {
+      const p = branding.proposals.find(prop => prop.id === components.logoProposalId);
+      if (p?.logo) logo = p.logo;
+    }
+
+    // 3. Resolve Palette
+    let colors = branding.colors;
+    if (components?.colorProposalId) {
+      const p = branding.proposals.find(prop => prop.id === components.colorProposalId);
+      if (p) {
+        colors = p.colorScheme.map((hex, i) => ({
+          name: i === 0 ? "Primario" : i === 1 ? "Secundario" : i === 2 ? "Acento" : i === 3 ? "Neutral Light" : i === 4 ? "Neutral Dark" : "Background",
+          hex,
+          usage: i === 0 ? "Identidad" : i === 1 ? "Apoyo" : i === 2 ? "Acento" : "Superficies"
+        }));
+      }
+    }
+
+    // 4. Resolve Typography
+    let typography = branding.typography;
+    if (components?.typographyProposalId) {
+      const p = branding.proposals.find(prop => prop.id === components.typographyProposalId);
+      if (p) {
+        typography = {
+          heading: {
+            name: p.typography.titulo,
+            fontFamily: `${p.typography.titulo}, sans-serif`,
+            usage: "Títulos",
+            googleFont: p.typography.titulo.replace(/\s+/g, '+')
+          },
+          body: {
+            name: p.typography.cuerpo,
+            fontFamily: `${p.typography.cuerpo}, sans-serif`,
+            usage: "Cuerpo",
+            googleFont: p.typography.cuerpo.replace(/\s+/g, '+')
+          }
+        };
+      }
+    }
+
+    // 5. Resolve Icons
+    let icons = branding.icons;
+    if (components?.iconsProposalId) {
+      const p = branding.proposals.find(prop => prop.id === components.iconsProposalId);
+      if (p?.icons) icons = p.icons;
+    }
+
+    return {
+      logo,
+      colors,
+      typography,
+      icons,
+      strategy: branding.strategy,
+      currentProposal: selectedProposal
+    };
+  };
+
+  const finalSystem = getFinalBrandSystem();
+  const { colors: currentColors, typography: currentTypo, logo: currentLogo, icons: currentIcons, currentProposal } = finalSystem;
+
   useEffect(() => {
     // Scroll to top when branding changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -38,8 +108,6 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
   const renderSection = () => {
     switch (activeSection) {
       case 'guideline':
-        const selectedProposal = branding.proposals.find(p => p.id === (branding.selectedComponents?.moodProposalId || branding.selectedProposalId || branding.proposals[0].id)) || branding.proposals[0];
-
         return (
           <div className="space-y-12 animate-fade-in pb-20">
             {/* 1. Brand Overview & DNA */}
@@ -96,16 +164,16 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 <div className="md:col-span-2 bg-slate-900 rounded-3xl p-12 flex items-center justify-center min-h-[400px] shadow-2xl relative overflow-hidden group">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
                   <div className="relative z-10 transition-transform duration-500 group-hover:scale-110">
-                    {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
+                    {currentLogo.startsWith('/') || currentLogo.startsWith('http') || currentLogo.startsWith('data:') ? (
                       <img
-                        src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo}
+                        src={currentLogo.startsWith('/') ? `${BACKEND_URL}${currentLogo}` : currentLogo}
                         alt={branding.brandName}
                         className="max-w-[280px] h-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-white/5 p-8 rounded-[40px] backdrop-blur-sm border border-white/10"
                       />
                     ) : (
                       <div
                         className="max-w-xs w-full drop-shadow-2xl"
-                        dangerouslySetInnerHTML={{ __html: branding.logo }}
+                        dangerouslySetInnerHTML={{ __html: currentLogo }}
                       />
                     )}
                   </div>
@@ -116,15 +184,15 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 flex flex-col justify-between">
                   <div>
                     <span className="text-xs font-bold text-cyan-600 uppercase tracking-widest mb-2 block">Creative Direction</span>
-                    <h3 className="text-2xl font-black text-slate-900 mb-4">{selectedProposal.name}</h3>
+                    <h3 className="text-2xl font-black text-slate-900 mb-4">{currentProposal.name}</h3>
                     <div className="space-y-4">
                       <div className="p-4 bg-slate-50 rounded-2xl">
                         <p className="text-xs font-bold text-slate-400 uppercase mb-1">Mood / Feeling</p>
-                        <p className="text-slate-700 font-medium capitalize">{selectedProposal.mood}</p>
+                        <p className="text-slate-700 font-medium capitalize">{currentProposal.mood}</p>
                       </div>
                       <div className="p-4 bg-slate-50 rounded-2xl">
                         <p className="text-xs font-bold text-slate-400 uppercase mb-1">Visual Concept</p>
-                        <p className="text-slate-600 text-sm leading-relaxed">{selectedProposal.description}</p>
+                        <p className="text-slate-600 text-sm leading-relaxed">{currentProposal.description}</p>
                       </div>
                     </div>
                   </div>
@@ -228,7 +296,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 <div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-200 md:w-fit">
                   <p className="text-xs font-bold text-slate-500 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full animate-pulse bg-cyan-500" />
-                    Estilo visual coherente basado en el Brand DNA '{selectedProposal.mood}'
+                    Estilo visual coherente basado en el territorio '{currentProposal.mood}'
                   </p>
                 </div>
               </div>
@@ -248,9 +316,9 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                     className="aspect-square rounded-2xl flex items-center justify-center p-8"
                     style={{ background: `linear-gradient(135deg, ${currentColors[0].hex}20, ${currentColors[1].hex}20)` }}
                   >
-                    {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
+                    {currentLogo.startsWith('/') || currentLogo.startsWith('http') || currentLogo.startsWith('data:') ? (
                       <img
-                        src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo}
+                        src={currentLogo.startsWith('/') ? `${BACKEND_URL}${currentLogo}` : currentLogo}
                         alt={`${branding.brandName} logo`}
                         className="w-full max-w-xs object-contain"
                       />
@@ -265,9 +333,9 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                   <div className="flex gap-3">
                     <button
                       onClick={() => {
-                        if (branding.logo.startsWith('data:')) {
+                        if (currentLogo.startsWith('data:')) {
                           const link = document.createElement('a');
-                          link.href = branding.logo;
+                          link.href = currentLogo;
                           link.download = `${branding.brandName}-logo.png`;
                           link.click();
                         }
@@ -485,9 +553,9 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200">
               <h2 className="text-2xl font-bold text-slate-900 mb-6">⬡ Sistema de Iconos</h2>
               <p className="text-slate-600 mb-6">
-                Un conjunto de {branding.icons.length} iconos diseñados con un estilo concordante para mantener la consistencia visual de tu marca.
+                Un conjunto de {currentIcons.length} iconos diseñados con un estilo concordante para mantener la consistencia visual de tu marca.
               </p>
-              <IconSet icons={branding.icons} color={currentColors[0].hex} />
+              <IconSet icons={currentIcons} color={currentColors[0].hex} />
             </div>
           </div>
         );
@@ -518,10 +586,10 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                 >
                   <nav className="p-6 flex items-center justify-between border-b border-black/5">
                     <div className="h-8 w-auto">
-                      {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
-                        <img src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo} className="h-full object-contain" alt="Logo" />
+                      {currentLogo.startsWith('/') || currentLogo.startsWith('http') || currentLogo.startsWith('data:') ? (
+                        <img src={currentLogo.startsWith('/') ? `${BACKEND_URL}${currentLogo}` : currentLogo} className="h-full object-contain" alt="Logo" />
                       ) : (
-                        <div className="h-full" dangerouslySetInnerHTML={{ __html: branding.logo.replace(/width="\d+"/, 'height="100%"') }} />
+                        <div className="h-full" dangerouslySetInnerHTML={{ __html: currentLogo.replace(/width="\d+"/, 'height="100%"') }} />
                       )}
                     </div>
                     <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-slate-900" style={{ fontFamily: currentTypo.body.fontFamily }}>
@@ -564,8 +632,8 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                     >
                       <div className="h-32 p-6 flex items-end" style={{ backgroundColor: currentColors[0].hex }}>
                         <div className="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center text-white">
-                          {branding.icons[0] && (
-                            <div className="w-6 h-6" dangerouslySetInnerHTML={{ __html: branding.icons[0].svg.replace(/currentColor/g, '#fff') }} />
+                          {currentIcons[0] && (
+                            <div className="w-6 h-6" dangerouslySetInnerHTML={{ __html: currentIcons[0].svg.replace(/currentColor/g, '#fff') }} />
                           )}
                         </div>
                       </div>
@@ -575,7 +643,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                           <h4 className="text-xl font-black text-slate-900" style={{ fontFamily: currentTypo.heading.fontFamily }}>Upcoming Tasks</h4>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          {branding.icons.slice(1, 5).map((icon, i) => (
+                          {currentIcons.slice(1, 5).map((icon, i) => (
                             <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
                               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${currentColors[i + 1]?.hex || currentColors[0].hex}15`, color: currentColors[i + 1]?.hex || currentColors[0].hex }}>
                                 <div className="w-5 h-5 font-bold" dangerouslySetInnerHTML={{ __html: icon.svg }} />
@@ -613,10 +681,10 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                       <div className="h-32 w-full rounded-2xl bg-gradient-to-r" style={{ backgroundImage: `linear-gradient(to right, ${currentColors[0].hex}, ${currentColors[1].hex})` }} />
                       <div className="absolute -bottom-10 left-6 w-20 h-20 rounded-2xl bg-white p-1.5 shadow-xl">
                         <div className="w-full h-full rounded-xl flex items-center justify-center overflow-hidden bg-slate-900">
-                          {branding.logo.startsWith('/') || branding.logo.startsWith('http') || branding.logo.startsWith('data:') ? (
-                            <img src={branding.logo.startsWith('/') ? `${BACKEND_URL}${branding.logo}` : branding.logo} className="w-12 h-12 object-contain" alt="Ava" />
+                          {currentLogo.startsWith('/') || currentLogo.startsWith('http') || currentLogo.startsWith('data:') ? (
+                            <img src={currentLogo.startsWith('/') ? `${BACKEND_URL}${currentLogo}` : currentLogo} className="w-12 h-12 object-contain" alt="Ava" />
                           ) : (
-                            <div className="w-12 h-12" dangerouslySetInnerHTML={{ __html: branding.logo }} />
+                            <div className="w-12 h-12" dangerouslySetInnerHTML={{ __html: currentLogo }} />
                           )}
                         </div>
                       </div>
@@ -641,7 +709,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                       <div className="absolute top-0 right-0 w-32 h-32 bg-slate-900 rounded-bl-[100px] transition-all group-hover:w-full group-hover:h-full group-hover:rounded-none group-hover:opacity-10 opacity-5" />
                       <div className="h-full flex flex-col justify-between p-8 relative z-10">
                         <div className="h-10 w-auto">
-                          <div className="h-full flex items-center" dangerouslySetInnerHTML={{ __html: branding.logo.replace(/currentColor/g, currentColors[0].hex).replace(/width="\d+"/, 'height="100%"') }} />
+                          <div className="h-full flex items-center" dangerouslySetInnerHTML={{ __html: currentLogo.replace(/currentColor/g, currentColors[0].hex).replace(/width="\d+"/, 'height="100%"') }} />
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mb-1">Corporate Identity</p>
@@ -664,11 +732,55 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
               <h2 className="text-2xl font-bold text-slate-900 mb-2">⚙️ Branding Mixer</h2>
               <p className="text-slate-500 mb-8">Personaliza tu branding combinando lo mejor de cada propuesta generada.</p>
 
-              <div className="grid md:grid-cols-3 gap-8">
-                {/* Color Selection */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {/* 1. Logotipo Selection */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-                    <span>🎨</span> Paleta de Colores
+                    <span>🎨</span> Logotipo
+                  </h3>
+                  <div className="space-y-2">
+                    {branding.proposals.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          const newBranding = {
+                            ...branding,
+                            selectedComponents: {
+                              ...branding.selectedComponents,
+                              logoProposalId: p.id
+                            }
+                          };
+                          if (currentProject) {
+                            updateProject({ ...currentProject, branding: newBranding });
+                          }
+                        }}
+                        className={cn(
+                          "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
+                          (branding.selectedComponents?.logoProposalId === p.id || (!branding.selectedComponents?.logoProposalId && p.id === 1))
+                            ? "border-cyan-500 bg-cyan-50"
+                            : "border-slate-100 hover:border-slate-300"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-slate-900 p-1 flex items-center justify-center">
+                            {p.logo && (
+                              <img src={p.logo.startsWith('/') ? `${BACKEND_URL}${p.logo}` : p.logo} className="w-full h-full object-contain" alt="Logo" />
+                            )}
+                          </div>
+                          <p className="text-xs font-semibold uppercase text-slate-400">Propuesta {p.id}</p>
+                        </div>
+                        {(branding.selectedComponents?.logoProposalId === p.id || (!branding.selectedComponents?.logoProposalId && p.id === 1)) && (
+                          <span className="text-cyan-600">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Color Selection */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <span>🌈</span> Paleta de Colores
                   </h3>
                   <div className="space-y-2">
                     {branding.proposals.map((p) => (
@@ -688,7 +800,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         }}
                         className={cn(
                           "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
-                          branding.selectedComponents?.colorProposalId === p.id
+                          (branding.selectedComponents?.colorProposalId === p.id || (!branding.selectedComponents?.colorProposalId && p.id === 1))
                             ? "border-cyan-500 bg-cyan-50"
                             : "border-slate-100 hover:border-slate-300"
                         )}
@@ -701,7 +813,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                             ))}
                           </div>
                         </div>
-                        {branding.selectedComponents?.colorProposalId === p.id && (
+                        {(branding.selectedComponents?.colorProposalId === p.id || (!branding.selectedComponents?.colorProposalId && p.id === 1)) && (
                           <span className="text-cyan-600">✓</span>
                         )}
                       </button>
@@ -709,7 +821,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                   </div>
                 </div>
 
-                {/* Typography Selection */}
+                {/* 3. Typography Selection */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-slate-800 flex items-center gap-2">
                     <span>✍️</span> Tipografía
@@ -732,16 +844,16 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         }}
                         className={cn(
                           "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
-                          branding.selectedComponents?.typographyProposalId === p.id
+                          (branding.selectedComponents?.typographyProposalId === p.id || (!branding.selectedComponents?.typographyProposalId && p.id === 1))
                             ? "border-cyan-500 bg-cyan-50"
                             : "border-slate-100 hover:border-slate-300"
                         )}
                       >
                         <div>
                           <p className="text-xs font-semibold uppercase text-slate-400">Propuesta {p.id}</p>
-                          <p className="text-sm font-medium mt-1 truncate">{p.typography.titulo}</p>
+                          <p className="text-[10px] font-medium mt-1 truncate">{p.typography.titulo}</p>
                         </div>
-                        {branding.selectedComponents?.typographyProposalId === p.id && (
+                        {(branding.selectedComponents?.typographyProposalId === p.id || (!branding.selectedComponents?.typographyProposalId && p.id === 1)) && (
                           <span className="text-cyan-600">✓</span>
                         )}
                       </button>
@@ -749,10 +861,10 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                   </div>
                 </div>
 
-                {/* Mood/Style Selection */}
+                {/* 4. Icon System Selection */}
                 <div className="space-y-4">
                   <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-                    <span>✨</span> Estilo Visual (Mood)
+                    <span>⬡</span> Iconografía
                   </h3>
                   <div className="space-y-2">
                     {branding.proposals.map((p) => (
@@ -763,7 +875,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                             ...branding,
                             selectedComponents: {
                               ...branding.selectedComponents,
-                              moodProposalId: p.id
+                              iconsProposalId: p.id
                             }
                           };
                           if (currentProject) {
@@ -772,21 +884,60 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         }}
                         className={cn(
                           "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
-                          branding.selectedComponents?.moodProposalId === p.id
+                          (branding.selectedComponents?.iconsProposalId === p.id || (!branding.selectedComponents?.iconsProposalId && p.id === 1))
                             ? "border-cyan-500 bg-cyan-50"
                             : "border-slate-100 hover:border-slate-300"
                         )}
                       >
-                        <div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex -space-x-1">
+                            {p.icons?.slice(0, 3).map((icon, i) => (
+                              <div key={i} className="w-5 h-5 rounded-md bg-slate-100 p-0.5 border border-white" dangerouslySetInnerHTML={{ __html: icon.svg }} />
+                            ))}
+                          </div>
                           <p className="text-xs font-semibold uppercase text-slate-400">Propuesta {p.id}</p>
-                          <p className="text-sm font-medium mt-1 capitalize">{p.mood}</p>
                         </div>
-                        {branding.selectedComponents?.moodProposalId === p.id && (
+                        {(branding.selectedComponents?.iconsProposalId === p.id || (!branding.selectedComponents?.iconsProposalId && p.id === 1)) && (
                           <span className="text-cyan-600">✓</span>
                         )}
                       </button>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              {/* Territory Strategy (Base) */}
+              <div className="mt-8 pt-8 border-t border-slate-100">
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <span>✨</span> Estrategia Visual de Base (DNA)
+                </h3>
+                <div className="flex flex-wrap gap-3">
+                  {branding.proposals.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        const newBranding = {
+                          ...branding,
+                          selectedComponents: {
+                            ...branding.selectedComponents,
+                            moodProposalId: p.id
+                          }
+                        };
+                        if (currentProject) {
+                          updateProject({ ...currentProject, branding: newBranding });
+                        }
+                      }}
+                      className={cn(
+                        "px-6 py-3 rounded-2xl border-2 transition-all flex flex-col gap-1",
+                        (branding.selectedComponents?.moodProposalId === p.id || (!branding.selectedComponents?.moodProposalId && p.id === 1))
+                          ? "border-kwiq bg-kwiq text-white shadow-lg shadow-kwiq/20"
+                          : "border-slate-100 bg-slate-50 text-slate-600 hover:border-slate-300"
+                      )}
+                    >
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Territorio {p.id}</span>
+                      <span className="font-bold text-sm tracking-tight capitalize">{p.mood}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -806,168 +957,127 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
     }
   };
 
-  // Combinar componentes si hay selección personalizada
-  const getDisplayData = () => {
-    const components = branding.selectedComponents;
+};
 
-    let displayColors = branding.colors;
-    let displayTypography = branding.typography;
-
-    if (components?.colorProposalId) {
-      const p = branding.proposals.find(prop => prop.id === components.colorProposalId);
-      if (p) {
-        displayColors = p.colorScheme.map((hex, i) => ({
-          name: i === 0 ? "Primario" : i === 1 ? "Secundario" : i === 2 ? "Acento" : `Color ${i + 1}`,
-          hex,
-          usage: i === 0 ? "Color principal" : "Color de apoyo"
-        }));
-      }
-    }
-
-    if (components?.typographyProposalId) {
-      const p = branding.proposals.find(prop => prop.id === components.typographyProposalId);
-      if (p) {
-        displayTypography = {
-          heading: {
-            name: p.typography.titulo,
-            fontFamily: `${p.typography.titulo}, sans-serif`,
-            usage: "Títulos",
-            googleFont: p.typography.titulo.replace(/\s+/g, '+')
-          },
-          body: {
-            name: p.typography.cuerpo,
-            fontFamily: `${p.typography.cuerpo}, sans-serif`,
-            usage: "Cuerpo",
-            googleFont: p.typography.cuerpo.replace(/\s+/g, '+')
-          }
-        };
-      }
-    }
-
-    return { colors: displayColors, typography: displayTypography };
-  };
-
-  const { colors: currentColors, typography: currentTypo } = getDisplayData();
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setActiveSection('logo')}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                <div className="w-10 h-10 flex items-center justify-center">
-                  <img src="/kwiq-logo.png" alt="Kwiq Logo" className="w-full h-full object-contain" />
-                </div>
-                <span className="font-bold text-slate-900">{branding.brandName}</span>
-              </button>
-            </div>
-
+return (
+  <div className="min-h-screen bg-slate-50">
+    {/* Header */}
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setShowExportModal(true)}
-              className="px-4 py-2 bg-kwiq hover:bg-kwiq-dark text-white rounded-xl font-medium transition-all shadow-md shadow-kwiq/10 hover:shadow-lg flex items-center gap-2"
+              onClick={() => setActiveSection('logo')}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              {t('brandGuide', 'exportBranding')}
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img src="/kwiq-logo.png" alt="Kwiq Logo" className="w-full h-full object-contain" />
+              </div>
+              <span className="font-bold text-slate-900">{branding.brandName}</span>
             </button>
           </div>
-        </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation */}
-        <div className="mb-8 overflow-x-auto">
-          <nav className="flex gap-2 min-w-max">
-            {sections.map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={cn(
-                  'px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap',
-                  activeSection === section.id
-                    ? 'bg-kwiq text-white shadow-lg shadow-kwiq/20'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                )}
-              >
-                <span className="mr-2">{section.icon}</span>
-                {section.label}
-              </button>
-            ))}
-          </nav>
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="px-4 py-2 bg-kwiq hover:bg-kwiq-dark text-white rounded-xl font-medium transition-all shadow-md shadow-kwiq/10 hover:shadow-lg flex items-center gap-2"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            {t('brandGuide', 'exportBranding')}
+          </button>
         </div>
+      </div>
+    </header>
 
-        {/* Content */}
-        {renderSection()}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Navigation */}
+      <div className="mb-8 overflow-x-auto">
+        <nav className="flex gap-2 min-w-max">
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              onClick={() => setActiveSection(section.id)}
+              className={cn(
+                'px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap',
+                activeSection === section.id
+                  ? 'bg-kwiq text-white shadow-lg shadow-kwiq/20'
+                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+              )}
+            >
+              <span className="mr-2">{section.icon}</span>
+              {section.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
-      {/* Export Modal */}
-      {showExportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-scale-in">
-            <h3 className="text-xl font-bold text-slate-900 mb-4">📥 {t('brandGuide', 'exportBranding')}</h3>
-            <p className="text-slate-600 mb-6">
-              Descarga tu guía de marca completa en el formato que prefieras.
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => {
-                  if (projectId) {
-                    const exportUrl = `${window.location.origin}/api/projects/${projectId}/export/pdf`;
-                    window.open(exportUrl, '_blank');
-                  }
-                }}
-                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-kwiq hover:bg-kwiq/5 transition-all flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-slate-900">{t('brandGuide', 'downloadPdf')}</p>
-                  <p className="text-sm text-slate-500">Documento profesional de marca</p>
-                </div>
-              </button>
-              <button
-                onClick={() => {
-                  if (projectId) {
-                    const exportUrl = `${window.location.origin}/api/projects/${projectId}/export/contents`;
-                    window.open(exportUrl, '_blank');
-                  }
-                }}
-                className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-kwiq hover:bg-kwiq/5 transition-all flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <path d="M8 13h8" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-slate-900">{t('brandGuide', 'downloadZip')}</p>
-                  <p className="text-sm text-slate-500">Logotipo e iconos PNG</p>
-                </div>
-              </button>
-            </div>
+      {/* Content */}
+      {renderSection()}
+    </div>
+
+    {/* Export Modal */}
+    {showExportModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-scale-in">
+          <h3 className="text-xl font-bold text-slate-900 mb-4">📥 {t('brandGuide', 'exportBranding')}</h3>
+          <p className="text-slate-600 mb-6">
+            Descarga tu guía de marca completa en el formato que prefieras.
+          </p>
+          <div className="space-y-3">
             <button
-              onClick={() => setShowExportModal(false)}
-              className="mt-4 w-full px-4 py-2 text-slate-500 hover:text-slate-700 transition-colors"
+              onClick={() => {
+                if (projectId) {
+                  const exportUrl = `${window.location.origin}/api/projects/${projectId}/export/pdf`;
+                  window.open(exportUrl, '_blank');
+                }
+              }}
+              className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-kwiq hover:bg-kwiq/5 transition-all flex items-center gap-3"
             >
-              {t('brandGuide', 'cancel')}
+              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-slate-900">{t('brandGuide', 'downloadPdf')}</p>
+                <p className="text-sm text-slate-500">Documento profesional de marca</p>
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                if (projectId) {
+                  const exportUrl = `${window.location.origin}/api/projects/${projectId}/export/contents`;
+                  window.open(exportUrl, '_blank');
+                }
+              }}
+              className="w-full p-4 rounded-xl border-2 border-slate-200 hover:border-kwiq hover:bg-kwiq/5 transition-all flex items-center gap-3"
+            >
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M8 13h8" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="font-medium text-slate-900">{t('brandGuide', 'downloadZip')}</p>
+                <p className="text-sm text-slate-500">Logotipo e iconos PNG</p>
+              </div>
             </button>
           </div>
+          <button
+            onClick={() => setShowExportModal(false)}
+            className="mt-4 w-full px-4 py-2 text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            {t('brandGuide', 'cancel')}
+          </button>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 }

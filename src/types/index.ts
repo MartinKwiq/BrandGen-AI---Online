@@ -39,6 +39,8 @@ export interface BrandBranding {
     colorProposalId?: number;
     typographyProposalId?: number;
     moodProposalId?: number;
+    logoProposalId?: number;
+    iconsProposalId?: number;
   };
 }
 
