@@ -219,10 +219,25 @@ Responde ESTRICTAMENTE en este formato JSON (sin markdown, sin texto extra):
 
       if (i === 0) {
         onStep?.('Generando logotipos principales...');
-        const logoPrompt = `Professional logo design for "${brandName}". ${normalizedDirection.visualDescription}. 
-Style: ${normalizedDirection.mood || 'modern'}. 
-Colors: ${normalizedDirection.colors?.map((c: any) => c.hex).join(', ') || '#6366f1, #8b5cf6'}. 
-Industry: ${industry || 'technology'}. No text, vector style, white background.`;
+        const strategy = creativeData.brandStrategy || {};
+        const logoPrompt = `
+Conceptual brand symbol for "${brandName}".
+Territory: ${normalizedDirection.name} (${normalizedDirection.mood}).
+Concept: ${normalizedDirection.visualDescription}.
+
+STRATEGIC CONTEXT:
+- Personality: ${strategy.brand_personality?.join(', ') || 'N/A'}. 
+- Positioning: ${strategy.brand_positioning || 'N/A'}.
+- Visual Rules: ${strategy.visual_style_guidelines || 'N/A'}.
+- Audience: ${strategy.target_audience || 'N/A'}.
+
+DESIGN SPECS:
+- Style: Modern, minimal, vector style, flat design.
+- Composition: Centered, high contrast silhouette, symmetrical or perfectly balanced.
+- Execution: Simple, scalable, no text, no fonts, no fine lines, no gradients, white background.
+- Palette: ${normalizedDirection.colors?.map((c: any) => c.hex).join(', ') || 'Professional colors'}.
+- Goal: A world-class identity symbol for ${industry || 'this industry'}.
+`.trim();
 
         try {
           const imageRes = await callBackend({ type: "image", prompt: logoPrompt });
