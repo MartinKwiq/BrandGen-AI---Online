@@ -98,23 +98,32 @@ Antes de las direcciones design, define la estrategia global que servirá como S
 Tu tarea: Diseña 5 TERRITORIOS CREATIVOS RADICALMENTE DISTINTOS para esta marca.
 IMPORTANTE: Cada territorio debe ser una interpretación visual coherente del BRAND DNA definido arriba. El DNA es la raíz; los territorios son las ramas.
 
-DESIGN COHERENCE RULES:
-- Una personalidad "Minimal Tech" DEBE usar colores fríos/tecnológicos y fuentes sans-serif geométricas.
-- Una personalidad "Premium Elegant" DEBE usar colores sobrios y fuentes serif clásicas.
-- Todas las elecciones de color y tipografía deben estar justificadas por el Brand DNA.
+DESIGN COHERENCE & COLOR PSYCHOLOGY RULES:
+- Las paletas de colores deben estar guiadas por la psicología del color y el Brand DNA:
+  * Tech/Innovation: Cool blues, cyans, electric violets.
+  * Premium/Luxury: Monocromáticos profundos, carbón, oro, tonos tierra refinados.
+  * Friendly/Organic: Verdes claros, terracotas, amarillos cálidos, tonos pastel.
+  * Bold/Startup: Colores vibrantes, alto contraste, neones acentuados.
+- Cada paleta DEBE tener exactamente 6 colores con estos roles específicos:
+  1. **Primary**: Color base de la identidad.
+  2. **Secondary**: Color de apoyo que complementa al primario.
+  3. **Accent**: Color de alto contraste para llamadas a la acción (CTA).
+  4. **Neutral Light**: Tono muy claro para fondos de tarjetas o superficies.
+  5. **Neutral Dark**: Tono oscuro para textos y contrastes profundos.
+  6. **Background**: Tono base para el fondo de la interface.
 
 TERRITORIOS OBLIGATORIOS (Uno por propuesta):
-1. **Minimal Tech**: Estética limpia, mucho espacio en blanco, enfoque en la funcionalidad y precisión.
-2. **Bold Startup**: Enérgico, uso de colores vibrantes, tipografías pesadas, actitud valiente y disruptiva.
-3. **Premium Elegant**: Refinado, paletas sobrias o monocromáticas, tipografías serif clásicas, sensación de lujo y exclusividad.
-4. **Friendly Modern**: Accesible, formas redondeadas, colores cálidos, tipografías amigables, enfoque en la comunidad y cercanía.
-5. **Futuristic Digital**: Innovador, gradientes complejos, efectos visuales de profundidad, tipografías geométricas experimentales.
+1. **Minimal Tech**: Estética limpia, enfoque en funcionalidad y precisión. Colores fríos.
+2. **Bold Startup**: Enérgico, colores vibrantes, actitud valiente. Alto contraste psicodélico o moderno.
+3. **Premium Elegant**: Refinado, paletas sobrias, sensación de lujo. Contraste sutil y sofisticado.
+4. **Friendly Modern**: Accesible, formas redondeadas, colores cálidos y amigables.
+5. **Futuristic Digital**: Innovador, gradientes sugeridos, colores experimentales y digitales.
 
 REQUERIMIENTOS POR PROPUESTA:
 1. **Nombre Creativo**: Título sugerente que refleje el territorio.
 2. **Mood/Estilo**: Debe ser EXACTAMENTE el nombre del territorio asignado.
-3. **Concepto**: Explicación de 2 oraciones del porqué de este estilo para el negocio basándote en el Brand DNA.
-4. **Paleta de Colores**: 6 colores HEX coherentes con el territorio y el DNA.
+3. **Concepto**: Porqué este estilo y paleta encajan con el Brand DNA (psicología).
+4. **Paleta de Colores**: 6 colores HEX siguiendo los roles definidos (Primary, Secondary, Accent, Neutral Light, Neutral Dark, Background).
 5. **Tipografías**: PAREJA ÚNICA de Google Fonts coherente con el territorio.
 6. **Descripción Visual del Logo**: Detalles específicos que sigan la lógica del DNA.
 7. **Estilo de Iconografía**: Describe iconos que sigan la lógica del territorio.
