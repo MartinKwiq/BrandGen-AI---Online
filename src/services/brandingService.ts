@@ -185,6 +185,43 @@ Responde ESTRICTAMENTE en este formato JSON:
       visualGuidelines: strategy.visual_style_guidelines || "Modern and professional aesthetic"
     };
 
+    // ===== PRE-LOOP: ICON SERVICE DISCOVERY (Shared for all proposals) =====
+    onStep?.('Identificando servicios clave del negocio...');
+    let iconDefinitions: any[] = [];
+    try {
+      const serviceDiscoveryPrompt = `
+        Actúa como un Especialista en UX/UI y Estrategia de Marca.
+        Marca: "${brandName}". Descripción del Negocio: "${description}".
+        Contexto de la Entrevista: "${chatContext || ''}".
+
+        TAREA: Identifica exactamente 6 servicios, secciones o categorías clave de este negocio para crear un sistema de iconos coherente para su interface digital.
+        
+        REGLAS:
+        1. Usa nombres de servicios reales y descriptivos (max 3 palabras).
+        2. Proporciona una explicación visual breve de cómo representar cada uno (ej: "Un engranaje con una lupa" para Soporte Técnico).
+        3. Asegúrate de que los 6 servicios cubran el espectro completo del negocio descubierto en la entrevista.
+
+        RESPONDE ESTRICTAMENTE EN JSON:
+        {"services": [{"name": "Nombre", "description": "Concepto visual"}]}
+      `;
+      const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
+      const discoveryJson = discoveryRes.result || discoveryRes;
+      const discoveryData = typeof discoveryJson === 'string'
+        ? JSON.parse(discoveryJson.replace(/```json/g, '').replace(/```/g, ''))
+        : discoveryJson;
+      iconDefinitions = (discoveryData.services || []).slice(0, 6);
+    } catch (e) {
+      console.warn("⚠️ Fallo descubrimiento de servicios, usando genéricos.");
+      iconDefinitions = [
+        { name: 'Servicio 1', description: 'Descripción 1' },
+        { name: 'Servicio 2', description: 'Descripción 2' },
+        { name: 'Servicio 3', description: 'Descripción 3' },
+        { name: 'Servicio 4', description: 'Descripción 4' },
+        { name: 'Servicio 5', description: 'Descripción 5' },
+        { name: 'Servicio 6', description: 'Descripción 6' }
+      ];
+    }
+
     for (let i = 0; i < Math.min(5, directions.length); i++) {
       const direction = directions[i];
 
@@ -231,9 +268,8 @@ Responde ESTRICTAMENTE en este formato JSON:
 
       let logoImageUrl = '';
 
-      if (i === 0) {
-        onStep?.('Generando logotipos principales...');
-        const logoPrompt = `
+      onStep?.(`Generando logotipo para ${direction.mood || direction.name}...`);
+      const logoPrompt = `
 Conceptual brand symbol for "${brandName}".
 Territory: ${normalizedDirection.name} (${normalizedDirection.mood}).
 Concept: ${normalizedDirection.visualDescription}.
@@ -252,59 +288,21 @@ DESIGN SPECS:
 - Goal: A world-class identity symbol for ${industry || 'this industry'}.
 `.trim();
 
-        try {
-          const imageRes = await callBackend({ type: "image", prompt: logoPrompt });
-          logoImageUrl = imageRes.logo;
-        } catch (error) {
-          logoImageUrl = generatePlaceholderLogo(brandName, normalizedDirection.colors?.[0]?.hex || '#6366f1');
-        }
-      } else {
+      try {
+        const imageRes = await callBackend({ type: "image", prompt: logoPrompt });
+        logoImageUrl = imageRes.logo;
+      } catch (error) {
         logoImageUrl = generatePlaceholderLogo(brandName, normalizedDirection.colors?.[0]?.hex || '#6366f1');
       }
 
       const icons: BrandIcon[] = [];
 
-      if (i === 0) {
-        onStep?.('Creando sistema de iconos personalizados...');
-        let iconDefinitions = [];
-        try {
-          const serviceDiscoveryPrompt = `
-            Actúa como un Especialista en UX/UI y Estrategia de Marca.
-            Marca: "${brandName}". Descripción del Negocio: "${description}".
-            Contexto de la Entrevista: "${chatContext || ''}".
+      onStep?.(`Creando iconos para ${direction.mood || direction.name}...`);
+      for (let j = 0; j < iconDefinitions.length; j++) {
+        const def = iconDefinitions[j];
+        const primaryHex = normalizedDirection.colors?.[0]?.hex || '#6366f1';
 
-            TAREA: Identifica exactamente 6 servicios, secciones o categorías clave de este negocio para crear un sistema de iconos coherente para su interface digital.
-            
-            REGLAS:
-            1. Usa nombres de servicios reales y descriptivos (max 3 palabras).
-            2. Proporciona una explicación visual breve de cómo representar cada uno (ej: "Un engranaje con una lupa" para Soporte Técnico).
-            3. Asegúrate de que los 6 servicios cubran el espectro completo del negocio descubierto en la entrevista.
-
-            RESPONDE ESTRICTAMENTE EN JSON:
-            {"services": [{"name": "Nombre", "description": "Concepto visual"}]}
-          `;
-          const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
-          const discoveryJson = discoveryRes.result || discoveryRes;
-          const discoveryData = typeof discoveryJson === 'string'
-            ? JSON.parse(discoveryJson.replace(/```json/g, '').replace(/```/g, ''))
-            : discoveryJson;
-          iconDefinitions = (discoveryData.services || []).slice(0, 6);
-        } catch (e) {
-          iconDefinitions = [
-            { name: 'Servicio 1', description: 'Descripción 1' },
-            { name: 'Servicio 2', description: 'Descripción 2' },
-            { name: 'Servicio 3', description: 'Descripción 3' },
-            { name: 'Servicio 4', description: 'Descripción 4' },
-            { name: 'Servicio 5', description: 'Descripción 5' },
-            { name: 'Servicio 6', description: 'Descripción 6' }
-          ];
-        }
-
-        for (let j = 0; j < iconDefinitions.length; j++) {
-          const def = iconDefinitions[j];
-          const primaryHex = normalizedDirection.colors?.[0]?.hex || '#6366f1';
-
-          const iconPrompt = `
+        const iconPrompt = `
 Diseña un icono de interface de usuario (UI) para el servicio: "${def.name}".
 Concepto Visual: ${def.description || def.name}.
 Territorio Creativo: ${normalizedDirection.name} (${normalizedDirection.mood}).
@@ -323,28 +321,21 @@ REGLAS DE COHERENCIA (Familia de Iconos):
 6. **Output**: Ilustración digital de alta calidad, estilo profesional para aplicaciones modernas.
 `.trim();
 
-          try {
-            const iconRes = await callBackend({
-              type: "image",
-              prompt: iconPrompt
-            });
-            icons.push({
-              name: def.name,
-              svg: iconRes.logo,
-              description: def.description || `Icono de ${def.name}`
-            });
-            console.log(`✅ Icon ${j + 1}/6 (${def.name}) generated`);
-            await delay(400); // Guard delay
-          } catch (error) {
-            console.error(`❌ Error generating icon ${j}:`, error);
-            icons.push(generateFallbackIcon(def.name.toLowerCase()));
-          }
-        }
-      } else {
-        // Fallback for secondary proposals icons
-        const fallbackIconNames = ['home', 'search', 'user', 'settings', 'heart', 'star'];
-        for (const iconName of fallbackIconNames) {
-          icons.push(generateFallbackIcon(iconName));
+        try {
+          const iconRes = await callBackend({
+            type: "image",
+            prompt: iconPrompt
+          });
+          icons.push({
+            name: def.name,
+            svg: iconRes.logo,
+            description: def.description || `Icono de ${def.name}`
+          });
+          console.log(`✅ Icon ${j + 1}/6 for Proposal ${i + 1} generated`);
+          await delay(400); // Guard delay
+        } catch (error) {
+          console.error(`❌ Error generating icon ${j} for Proposal ${i + 1}:`, error);
+          icons.push(generateFallbackIcon(def.name.toLowerCase()));
         }
       }
 
