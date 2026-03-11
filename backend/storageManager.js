@@ -83,22 +83,9 @@ export async function saveProject(project) {
     // 2. Persistir en Supabase (Prioridad) o Local
     if (supabase) {
         try {
-            const { data, error } = await supabase
-                .from('brandgen_projects')
-                .upsert({
-                    id: projectId,
-                    name: project.name || project.branding?.brandName || "Nuevo Proyecto",
-                    description: project.description || project.branding?.tagline || "",
-                    branding: project.branding,
-                    status: project.status || 'active',
-                    updated_at: new Date().toISOString()
-                })
-                .select()
-                .single();
-
-            if (error) throw error;
+            await saveBrandingProject(project);
             console.log(`✅ Proyecto ${projectId} persistido en Supabase.`);
-            return { ...project, ...data };
+            return project;
         } catch (error) {
             console.error("❌ Error persistiendo en Supabase, reintentando local...", error.message);
         }
@@ -112,6 +99,34 @@ export async function saveProject(project) {
     }, { spaces: 2 });
 
     return project;
+}
+
+/**
+ * Guarda un proyecto específicamente en la tabla brandgen_projects de Supabase.
+ * @param {Object} project El objeto completo del proyecto.
+ */
+export async function saveBrandingProject(project) {
+    if (!supabase) {
+        console.warn("⚠️ Supabase no está configurado. No se puede guardar el proyecto.");
+        return;
+    }
+
+    const { error } = await supabase
+        .from("brandgen_projects")
+        .upsert({
+            id: project.id,
+            name: project.name || project.branding?.brandName || "Nuevo Proyecto",
+            description: project.description || project.branding?.tagline || "",
+            branding: project.branding || project, // Guardar la sección branding o el objeto completo como JSON
+            status: project.status || "generated",
+            created_at: project.createdAt || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        });
+
+    if (error) {
+        console.error("❌ SUPABASE INSERT ERROR:", error);
+        throw error;
+    }
 }
 
 /**

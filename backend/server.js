@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as storage from "./storageManager.js";
+import crypto from "crypto";
 import path from "path";
 import fs from "fs-extra";
 import PDFDocument from "pdfkit";
@@ -296,7 +297,7 @@ app.get("/api/projects", async (req, res) => {
 app.post("/api/projects", async (req, res) => {
     try {
         const project = req.body;
-        if (!project.id) project.id = Date.now().toString(36);
+        if (!project.id) project.id = crypto.randomUUID();
         const savedProject = await storage.saveProject(project);
         res.json(savedProject);
     } catch (error) {
