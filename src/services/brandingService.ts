@@ -63,6 +63,28 @@ ${assistantMessages}
   `.trim();
 }
 
+/**
+ * UTILITY: Extract JSON from AI response text
+ * Handles markdown blocks and preamble text
+ */
+function extractJSON(text: string): string {
+  // 1. Try to find markdown JSON block
+  const markdownMatch = text.match(/```json([\s\S]*?)```/);
+  if (markdownMatch && markdownMatch[1]) {
+    return markdownMatch[1].trim();
+  }
+
+  // 2. Look for the first "{" and the last "}"
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
+  
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return text.slice(firstBrace, lastBrace + 1).trim();
+  }
+
+  return text.trim();
+}
+
 // ===== GENERATE BRANDING WITH MULTI-AGENT SYSTEM =====
 export async function generateBranding(
   brandName: string,
@@ -142,23 +164,20 @@ Responde ESTRICTAMENTE en este formato JSON:
 }`;
 
     console.log('🎭 Agent 1: Director Creativo (Backend)...');
-    const { result: creativeDirections } = await callBackend({
+    const { result: rawCreativeResponse } = await callBackend({
       type: "text",
       prompt: directorPrompt
     });
-    console.log("RAW CREATIVE RESPONSE:", creativeDirections);
-    // Clean JSON
-    let cleanedJson = creativeDirections.trim();
-
-    // Eliminar bloques markdown si la IA los incluyó a pesar de la instrucción
-    cleanedJson = cleanedJson.replace(/```json/g, '').replace(/```/g, '');
+    
+    console.log("RAW AI RESPONSE (Agent 1):", rawCreativeResponse);
 
     let creativeData;
     try {
+      const cleanedJson = extractJSON(rawCreativeResponse);
       creativeData = JSON.parse(cleanedJson);
-      console.log('✅ Creative data parsed with diversity');
+      console.log('PARSED JSON (Agent 1):', creativeData);
     } catch (e) {
-      console.error('❌ Error parsing Creative Director JSON, attempting partial recovery...', e);
+      console.error('❌ JSON PARSE FAILED (Agent 1):', e);
       // Fallback simple structure if parsing fails completely
       creativeData = {
         brandStrategy: {
@@ -226,16 +245,20 @@ Responde ESTRICTAMENTE en este formato JSON:
         {"services": [{"name": "Nombre", "description": "Concepto visual"}]}
       `;
       const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
-      const discoveryJson = discoveryRes.result || discoveryRes;
+      const rawDiscoveryResponse = discoveryRes.result || discoveryRes;
+      console.log("RAW AI RESPONSE (Service Discovery):", rawDiscoveryResponse);
       
       let discoveryData;
       try {
-        discoveryData = typeof discoveryJson === 'string'
-          ? JSON.parse(discoveryJson.replace(/```json/g, '').replace(/```/g, ''))
-          : discoveryJson;
+        const cleanedDiscovery = typeof rawDiscoveryResponse === 'string'
+          ? extractJSON(rawDiscoveryResponse)
+          : JSON.stringify(rawDiscoveryResponse);
+          
+        discoveryData = JSON.parse(cleanedDiscovery);
+        console.log("PARSED JSON (Service Discovery):", discoveryData);
         iconDefinitions = (discoveryData.services || []).slice(0, 6);
       } catch (parseError) {
-        console.error("❌ Error parsing Service Discovery JSON:", parseError);
+        console.error("❌ JSON PARSE FAILED (Service Discovery):", parseError);
         throw new Error("Failed to parse services");
       }
     } catch (e) {
