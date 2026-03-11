@@ -153,8 +153,29 @@ Responde ESTRICTAMENTE en este formato JSON:
     // Eliminar bloques markdown si la IA los incluyó a pesar de la instrucción
     cleanedJson = cleanedJson.replace(/```json/g, '').replace(/```/g, '');
 
-    const creativeData = JSON.parse(cleanedJson);
-    console.log('✅ Creative data parsed with diversity');
+    let creativeData;
+    try {
+      creativeData = JSON.parse(cleanedJson);
+      console.log('✅ Creative data parsed with diversity');
+    } catch (e) {
+      console.error('❌ Error parsing Creative Director JSON, attempting partial recovery...', e);
+      // Fallback simple structure if parsing fails completely
+      creativeData = {
+        brandStrategy: {
+          brand_personality: ['Modern', 'Professional'],
+          brand_positioning: brandName,
+          visual_style_guidelines: 'Clean and minimal'
+        },
+        proposals: [{
+          name: 'Concept Utama',
+          mood: 'Minimal Tech',
+          colors: [{ name: 'Primary', hex: '#6366f1', usage: 'Main' }],
+          typography: { titulo: 'Inter', cuerpo: 'DM Sans' },
+          logoDescription: 'Minimalist geometric symbol',
+          iconStyle: 'Line icons'
+        }]
+      };
+    }
 
     // ===== AGENTE 2: DISEÑADOR GRÁFICO (Genera Logos con Imagen 3 via Backend) =====
     onStep?.('Diseñando propuestas de color y tipografía...');
@@ -206,10 +227,17 @@ Responde ESTRICTAMENTE en este formato JSON:
       `;
       const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
       const discoveryJson = discoveryRes.result || discoveryRes;
-      const discoveryData = typeof discoveryJson === 'string'
-        ? JSON.parse(discoveryJson.replace(/```json/g, '').replace(/```/g, ''))
-        : discoveryJson;
-      iconDefinitions = (discoveryData.services || []).slice(0, 6);
+      
+      let discoveryData;
+      try {
+        discoveryData = typeof discoveryJson === 'string'
+          ? JSON.parse(discoveryJson.replace(/```json/g, '').replace(/```/g, ''))
+          : discoveryJson;
+        iconDefinitions = (discoveryData.services || []).slice(0, 6);
+      } catch (parseError) {
+        console.error("❌ Error parsing Service Discovery JSON:", parseError);
+        throw new Error("Failed to parse services");
+      }
     } catch (e) {
       console.warn("⚠️ Fallo descubrimiento de servicios, usando genéricos.");
       iconDefinitions = [

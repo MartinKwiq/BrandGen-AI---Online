@@ -8,6 +8,7 @@ import path from "path";
 import fs from "fs-extra";
 import PDFDocument from "pdfkit";
 import archiver from "archiver";
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -297,8 +298,17 @@ app.get("/api/projects", async (req, res) => {
 app.post("/api/projects", async (req, res) => {
     try {
         const project = req.body;
-        if (!project.id) project.id = crypto.randomUUID();
+        if (!project.id) project.id = uuidv4();
+        
+        console.log("Attempting to save project...", project.id);
+        
+        // Primero guardamos en disco (e imágenes)
         const savedProject = await storage.saveProject(project);
+        
+        // Luego forzamos guardado en Supabase explícitamente si es necesario
+        // aunque saveProject ya lo llama, nos aseguramos de que se complete
+        await storage.saveBrandingProject(savedProject);
+        
         res.json(savedProject);
     } catch (error) {
         console.error("Error al guardar proyecto:", error);

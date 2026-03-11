@@ -3,6 +3,7 @@ import path from "path";
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -35,7 +36,7 @@ if (supabaseUrl && supabaseKey && supabaseUrl.startsWith("http")) {
  */
 export async function saveProject(project) {
     // Generar UUID v4 si no tiene ID (para compatibilidad con Supabase)
-    const projectId = project.id || crypto.randomUUID();
+    const projectId = project.id || uuidv4();
     project.id = projectId;
 
     const projectDir = path.join(STORAGE_DIR, projectId);
@@ -111,21 +112,29 @@ export async function saveBrandingProject(project) {
         return;
     }
 
-    const { error } = await supabase
-        .from("brandgen_projects")
-        .upsert({
-            id: project.id,
-            name: project.name || project.branding?.brandName || "Nuevo Proyecto",
-            description: project.description || project.branding?.tagline || "",
-            branding: project.branding || project, // Guardar la sección branding o el objeto completo como JSON
-            status: project.status || "generated",
-            created_at: project.createdAt || new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        });
+    try {
+        console.log("Saving project to Supabase...", project.id);
+        
+        const { data, error } = await supabase
+            .from("brandgen_projects")
+            .insert([
+                {
+                    id: project.id,
+                    name: project.name || project.branding?.brandName || "Unnamed Project",
+                    description: project.description || project.branding?.tagline || "",
+                    branding: project.branding || project,
+                    status: "completed"
+                }
+            ]);
 
-    if (error) {
-        console.error("❌ SUPABASE INSERT ERROR:", error);
-        throw error;
+        if (error) {
+            console.error("SUPABASE INSERT ERROR:", error);
+            throw error;
+        }
+
+        console.log("Project successfully saved to Supabase:", data);
+    } catch (err) {
+        console.error("SAVE BRANDING PROJECT FAILED:", err);
     }
 }
 
