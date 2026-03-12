@@ -67,22 +67,33 @@ ${assistantMessages}
  * UTILITY: Extract JSON from AI response text
  * Handles markdown blocks and preamble text
  */
-function extractJSON(text: string): string {
-  // 1. Try to find markdown JSON block (single or triple backticks)
-  const jsonBlock = text.match(/`json([\s\S]*?)`/);
-  if (jsonBlock && jsonBlock[1]) {
-    return jsonBlock[1].trim();
-  }
+function extractJSON(rawText: string | null | undefined): string | null {
+  if (!rawText) return null;
 
-  // 2. Look for the first "{" and the last "}"
-  const firstBrace = text.indexOf("{");
-  const lastBrace = text.lastIndexOf("}");
-  
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    return text.slice(firstBrace, lastBrace + 1).trim();
-  }
+  try {
+    // Remove markdown code blocks
+    let cleaned = rawText
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-  return text.trim();
+    // Find first { and last }
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+
+    if (start === -1 || end === -1) {
+      console.warn("extractJSON: could not locate JSON boundaries");
+      return null;
+    }
+
+    const jsonString = cleaned.substring(start, end + 1);
+
+    return jsonString;
+
+  } catch (err) {
+    console.error("extractJSON failure:", err);
+    return null;
+  }
 }
 
 /**
@@ -259,33 +270,25 @@ Responde ESTRICTAMENTE en este formato JSON:
     
     console.log("RAW AI RESPONSE (Agent 1):", rawCreativeResponse);
 
-    let creativeData;
-    let cleanedJson = "";
+    const cleanedJSON = extractJSON(rawCreativeResponse);
+
+    console.log("EXTRACTED JSON (Agent 1):", cleanedJSON);
+
+    let creativeData = null;
+
     try {
-      cleanedJson = extractJSON(rawCreativeResponse);
-      creativeData = JSON.parse(cleanedJson);
-      console.log('EXTRACTED JSON (Agent 1):', cleanedJson);
-      // console.log('PARSED JSON (Agent 1):', creativeData);
-    } catch (e) {
-      console.error('❌ JSON PARSE FAILED (Agent 1):', e);
-      console.log("RAW RESPONSE:", rawCreativeResponse);
-      // Fallback simple structure if parsing fails completely
+      creativeData = cleanedJSON ? JSON.parse(cleanedJSON) : null;
+    } catch (err) {
+      console.error("JSON PARSE FAILED (Agent 1):", err);
+    }
+
+    if (!creativeData) {
       creativeData = {
-        brandStrategy: {
-          brand_personality: ['Modern', 'Professional'],
-          brand_positioning: brandName,
-          visual_style_guidelines: 'Clean and minimal'
-        },
-        proposals: [{
-          name: 'Concept Utama',
-          mood: 'Minimal Tech',
-          colors: [{ name: 'Primary', hex: '#6366f1', usage: 'Main' }],
-          typography: { titulo: 'Inter', cuerpo: 'DM Sans' },
-          logoDescription: 'Minimalist geometric symbol',
-          iconStyle: 'Line icons'
-        }]
+        proposals: []
       };
     }
+
+    console.log('PARSED JSON (Agent 1):', creativeData);
 
     // ===== AGENTE 2: DISEÑADOR GRÁFICO (Genera Logos con Imagen 3 via Backend) =====
     onStep?.('Diseñando propuestas de color y tipografía...');
@@ -339,23 +342,28 @@ Responde ESTRICTAMENTE en este formato JSON:
       const rawDiscoveryResponse = discoveryRes.result || discoveryRes;
       console.log("RAW AI RESPONSE (Service Discovery):", rawDiscoveryResponse);
       
-      let discoveryData;
-      let cleanedDiscovery = "";
+      const cleanedDiscovery = typeof rawDiscoveryResponse === 'string'
+        ? extractJSON(rawDiscoveryResponse)
+        : JSON.stringify(rawDiscoveryResponse); // Si ya vino parseado, lo tratamos normal aunque lo volveremos a parsear
+
+      console.log("EXTRACTED JSON (Service Discovery):", cleanedDiscovery);
+
+      let discoveryData = null;
+
       try {
-        cleanedDiscovery = typeof rawDiscoveryResponse === 'string'
-          ? extractJSON(rawDiscoveryResponse)
-          : JSON.stringify(rawDiscoveryResponse);
-          
-        discoveryData = JSON.parse(cleanedDiscovery);
-        console.log("EXTRACTED JSON (Service Discovery):", cleanedDiscovery);
-        // console.log("PARSED JSON (Service Discovery):", discoveryData);
-        iconDefinitions = (discoveryData.services || []).slice(0, 6);
-      } catch (parseError) {
-        console.error("❌ JSON PARSE FAILED (Service Discovery):", parseError);
-        console.log("RAW RESPONSE:", rawDiscoveryResponse);
-        // Fallback simple structure instead of throwing
-        discoveryData = null;
+        discoveryData = cleanedDiscovery ? JSON.parse(cleanedDiscovery) : null;
+      } catch (err) {
+        console.error("JSON PARSE FAILED (Service Discovery):", err);
       }
+
+      if (!discoveryData) {
+        discoveryData = {
+          services: []
+        };
+      }
+
+      console.log("PARSED JSON (Service Discovery):", discoveryData);
+      iconDefinitions = (discoveryData.services || []).slice(0, 6);
     } catch (e) {
       console.warn("⚠️ Fallo descubrimiento de servicios, usando genéricos.");
       iconDefinitions = [
