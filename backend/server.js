@@ -14,6 +14,8 @@ dotenv.config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+const DEFAULT_SYSTEM_INSTRUCTION = "Eres un experto en branding y diseño. Responde de forma clara, profesional y concisa.";
+
 if (!GEMINI_API_KEY) {
     console.error("❌ ERROR: GEMINI_API_KEY no encontrada en el entorno.");
     process.exit(1);
@@ -57,7 +59,7 @@ const aiInstances = [
  * Helper to call Gemini with automatic multi-key fallback and model fallback
  */
 async function safeGenerateContent(options) {
-    const { contents, systemInstruction } = options;
+    const { contents, systemInstruction, generationConfig } = options;
     // Modelos confirmados disponibles para las llaves del proyecto.
     // Fuente: listado directo de la API v1beta con las llaves configuradas.
     const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash"];
@@ -78,7 +80,11 @@ async function safeGenerateContent(options) {
             try {
                 const model = aiInstances[i].getGenerativeModel({
                     model: modelName,
-                    systemInstruction: typeof systemInstruction === 'string' ? systemInstruction : undefined
+                    systemInstruction: typeof systemInstruction === 'string' ? systemInstruction : undefined,
+                    generationConfig: generationConfig || {
+                        maxOutputTokens: 1000,
+                        temperature: 0.7
+                    }
                 });
 
                 const result = await model.generateContent({ contents });
@@ -252,11 +258,19 @@ app.post("/api/generate", async (req, res) => {
                 contents = [{ role: "user", parts: [{ text: prompt }] }];
             }
 
+            // Optimización de tokens: Limitar historial a los últimos 6 mensajes
+            // (3 intercambios usuario/modelo)
+            const recentMessages = contents.slice(-6);
+            
+            console.log(`📊 Historial de chat optimizado: Enviando ${recentMessages.length} mensajes a Gemini.`);
+
             const chatResponse = await safeGenerateContent({
-                systemInstruction:
-                    systemInstruction ||
-                    "Eres un asistente experto en branding. Responde claro y directo.",
-                contents: contents,
+                systemInstruction: systemInstruction || DEFAULT_SYSTEM_INSTRUCTION,
+                contents: recentMessages,
+                generationConfig: {
+                    maxOutputTokens: 600,
+                    temperature: 0.7
+                }
             });
 
             // Persistir mensaje del usuario y respuesta en Supabase si hay projectId
