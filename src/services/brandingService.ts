@@ -290,13 +290,17 @@ Responde ESTRICTAMENTE en este formato JSON:
 
     console.log('PARSED JSON (Agent 1):', creativeData);
 
-    // ===== AGENTE 2: DISEÑADOR GRÁFICO (Genera Logos con Imagen 3 via Backend) =====
-    onStep?.('Diseñando propuestas de color y tipografía...');
-    console.log('🎨 Agent 2: Graphic Designer (Backend Imagen 3)...');
+    // ===== VALIDACIÓN ESTRICTA DE PROPUESTAS =====
+    const DEFAULT_PROPOSALS = [
+      { name: "Tech Minimal", mood: "Modern Digital" },
+      { name: "Bold Startup", mood: "Energetic Disruptive" },
+      { name: "Premium Corporate", mood: "Elegant Trust" },
+      { name: "Future AI", mood: "Experimental Innovation" },
+      { name: "Human Friendly", mood: "Warm Accessible" }
+    ];
 
-    const proposals = [];
+    // Extraer el array de propuestas desde la respuesta del Director
     let directions: any[] = [];
-
     if (creativeData.proposals && Array.isArray(creativeData.proposals)) {
       directions = creativeData.proposals;
     } else if (Array.isArray(creativeData)) {
@@ -306,9 +310,19 @@ Responde ESTRICTAMENTE en este formato JSON:
       if (possibleArray) directions = possibleArray as any[];
     }
 
-    if (!directions.length) {
-      throw new Error("No se generaron propuestas desde el backend");
+    // Garantizar exactamente 5 propuestas
+    if (!directions || directions.length !== 5) {
+      console.warn(`Director Agent returned ${directions?.length ?? 0} proposals. Expected 5. Using defaults.`);
+      directions = DEFAULT_PROPOSALS;
     }
+
+    console.log("Total proposals:", directions.length);
+
+    // ===== AGENTE 2: DISEÑADOR GRÁFICO (Genera Logos con Imagen 3 via Backend) =====
+    onStep?.('Diseñando propuestas de color y tipografía...');
+    console.log('🎨 Agent 2: Graphic Designer (Backend Imagen 3)...');
+
+    const proposals = [];
 
     // ===== UNIFIED BRAND DNA LAYER =====
     const strategy = creativeData.brandStrategy || {};
@@ -379,15 +393,31 @@ Responde ESTRICTAMENTE en este formato JSON:
     for (let i = 0; i < Math.min(5, directions.length); i++) {
       const direction = directions[i];
 
-      const rawColors = direction.colors || direction.paleta_colores || null;
-      let normalizedColors: BrandColor[] | undefined;
+      const DEFAULT_PALETTE: BrandColor[] = [
+        { name: "Primary", hex: "#2563EB", usage: "Color principal" },
+        { name: "Secondary", hex: "#10B981", usage: "Color secundario" },
+        { name: "Accent", hex: "#F59E0B", usage: "Acentos" },
+        { name: "Neutral Light", hex: "#F3F4F6", usage: "Fondos claros" },
+        { name: "Neutral Dark", hex: "#374151", usage: "Textos" },
+        { name: "Background", hex: "#FFFFFF", usage: "Fondo base" }
+      ];
 
-      if (Array.isArray(rawColors)) {
+      const rawColors = direction.colors || direction.paleta_colores || null;
+      let normalizedColors: BrandColor[];
+
+      if (Array.isArray(rawColors) && rawColors.length >= 1) {
         normalizedColors = rawColors.map((c: any) => ({
           name: c.name || c.nombre || "Color",
           hex: c.hex || c.hexadecimal || (typeof c === 'string' ? c : "#6366f1"),
           usage: c.usage || c.uso || "Uso general"
         }));
+        // Pad to 6 if the AI returned fewer
+        while (normalizedColors.length < 6) {
+          normalizedColors.push(DEFAULT_PALETTE[normalizedColors.length]);
+        }
+      } else {
+        console.warn("[Palette] Missing colors from proposal. Using default palette.");
+        normalizedColors = DEFAULT_PALETTE;
       }
 
       const rawTypography = direction.typography || direction.tipografias || null;
@@ -868,3 +898,45 @@ export function getApiKey(): string | null {
 export function deleteApiKey(): void {
   localStorage.removeItem('brandgen_api_key');
 }
+
+export function testDirectorAgentParsing() {
+  const simulatedResponse = `
+\`\`\`json
+{
+  "brandStrategy": {
+    "brand_personality": ["Innovadora","Eficiente","Profesional"]
+  },
+  "proposals": [
+    { "name": "Tech Minimal", "mood": "Modern Digital" },
+    { "name": "Bold Startup", "mood": "Energetic Disruptive" },
+    { "name": "Premium Corporate", "mood": "Elegant Trust" },
+    { "name": "Future AI", "mood": "Experimental Innovation" },
+    { "name": "Human Friendly", "mood": "Warm Accessible" }
+  ]
+}
+\`\`\`
+  `;
+
+  console.log("RAW AI RESPONSE (SIMULATED):\\n", simulatedResponse);
+
+  const cleanedJSON = extractJSON(simulatedResponse);
+
+  console.log("EXTRACTED JSON:\\n", cleanedJSON);
+
+  let parsed = null;
+
+  try {
+    parsed = cleanedJSON ? JSON.parse(cleanedJSON) : null;
+  } catch (err) {
+    console.error("JSON PARSE FAILED:", err);
+  }
+
+  if (!parsed) {
+    parsed = {
+      proposals: []
+    };
+  }
+  
+  console.log("PARSED JSON:\\n", parsed);
+}
+
