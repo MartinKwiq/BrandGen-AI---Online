@@ -85,6 +85,59 @@ function extractJSON(text: string): string {
   return text.trim();
 }
 
+/**
+ * UTILITY: Sequential Image Generation Queue with Retry Logic
+ */
+async function generateImageQueue(
+  prompts: string[], 
+  onProgress?: (index: number, total: number) => void
+): Promise<string[]> {
+  const results: string[] = [];
+  const total = prompts.length;
+
+  console.log(`🚀 Starting image queue: ${total} tasks`);
+
+  for (let i = 0; i < total; i++) {
+    const prompt = prompts[i];
+    let success = false;
+    let attempts = 0;
+    const maxAttempts = 2;
+
+    while (!success && attempts < maxAttempts) {
+      try {
+        attempts++;
+        if (onProgress) onProgress(i + 1, total);
+        
+        console.log(`📸 Generating image ${i + 1}/${total} (Attempt ${attempts}):`, prompt.substring(0, 50) + "...");
+        
+        const res = await callBackend({ type: "image", prompt });
+        
+        if (res && res.logo) {
+          results.push(res.logo);
+          success = true;
+          // Guard delay after success
+          await new Promise(resolve => setTimeout(resolve, 2500));
+        } else {
+          throw new Error("Invalid response from image API");
+        }
+      } catch (error: any) {
+        console.error(`❌ Image generation failed (${i + 1}/${total}):`, error);
+        
+        if (attempts < maxAttempts) {
+          console.log("⏳ Rate limit or error hit. Waiting 10s before retry...");
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        } else {
+          console.warn("⚠️ Max attempts reached. Using fallback.");
+          results.push(""); // Push empty to maintain index, will be handled by caller
+        }
+      }
+    }
+  }
+
+  console.log("🏁 Image queue completed");
+  return results;
+}
+
 // ===== GENERATE BRANDING WITH MULTI-AGENT SYSTEM =====
 export async function generateBranding(
   brandName: string,
@@ -339,21 +392,16 @@ DESIGN SPECS:
 - Goal: A world-class identity symbol for ${industry || 'this industry'}.
 `.trim();
 
-      try {
-        const imageRes = await callBackend({ type: "image", prompt: logoPrompt });
-        logoImageUrl = imageRes.logo;
-      } catch (error) {
-        logoImageUrl = generatePlaceholderLogo(brandName, normalizedDirection.colors?.[0]?.hex || '#6366f1');
-      }
+      const logoResults = await generateImageQueue([logoPrompt]);
+      logoImageUrl = logoResults[0] || generatePlaceholderLogo(brandName, normalizedDirection.colors?.[0]?.hex || '#6366f1');
 
       const icons: BrandIcon[] = [];
 
       onStep?.(`Creando iconos para ${direction.mood || direction.name}...`);
-      for (let j = 0; j < iconDefinitions.length; j++) {
-        const def = iconDefinitions[j];
+      
+      const iconPrompts = iconDefinitions.map(def => {
         const primaryHex = normalizedDirection.colors?.[0]?.hex || '#6366f1';
-
-        const iconPrompt = `
+        return `
 Diseña un icono de interface de usuario (UI) para el servicio: "${def.name}".
 Concepto Visual: ${def.description || def.name}.
 Territorio Creativo: ${normalizedDirection.name} (${normalizedDirection.mood}).
@@ -371,24 +419,24 @@ REGLAS DE COHERENCIA (Familia de Iconos):
 5. **Prohibido**: NO incluyas texto, letras, ni sombras fotorealistas. No uses fondos complejos.
 6. **Output**: Ilustración digital de alta calidad, estilo profesional para aplicaciones modernas.
 `.trim();
+      });
 
-        try {
-          const iconRes = await callBackend({
-            type: "image",
-            prompt: iconPrompt
-          });
+      const iconImages = await generateImageQueue(iconPrompts, (current, total) => {
+        onStep?.(`Generando icono ${current}/${total} para ${direction.mood}...`);
+      });
+
+      iconImages.forEach((img, idx) => {
+        const def = iconDefinitions[idx];
+        if (img) {
           icons.push({
             name: def.name,
-            svg: iconRes.logo,
+            svg: img,
             description: def.description || `Icono de ${def.name}`
           });
-          console.log(`✅ Icon ${j + 1}/6 for Proposal ${i + 1} generated`);
-          await delay(400); // Guard delay
-        } catch (error) {
-          console.error(`❌ Error generating icon ${j} for Proposal ${i + 1}:`, error);
+        } else {
           icons.push(generateFallbackIcon(def.name.toLowerCase()));
         }
-      }
+      });
 
       // HELPER: Saneado de strings para evitar que objetos de la IA crasheen React
       const safeStr = (val: any, fallback: string = ""): string => {

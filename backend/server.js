@@ -217,9 +217,12 @@ app.post("/api/generate", async (req, res) => {
                 console.error("=== ERROR EN GENERACIÓN DE IMAGEN (REST) ===");
                 console.error(error.message);
 
-                res.status(500).json({
+                const status = error.message.includes("429") ? 429 : 500;
+
+                res.status(status).json({
                     error: "Error procesando solicitud de IA (Imagen)",
-                    details: error.message
+                    message: error.message,
+                    isRateLimit: status === 429
                 });
                 return;
             } finally {
