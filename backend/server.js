@@ -14,11 +14,23 @@ dotenv.config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+// Configuraciones de Imagen API (Primaria y Fallback)
+const PRIMARY_IMAGE_API_KEY = process.env.IMAGE_API_PRIMARY_KEY || process.env.GOOGLE_IMAGEN_API_KEY || GEMINI_API_KEY;
+const FALLBACK_IMAGE_API_KEY = process.env.IMAGE_API_FALLBACK_KEY || GEMINI_API_KEY;
+
 const DEFAULT_SYSTEM_INSTRUCTION = "Eres un experto en branding y diseño. Responde de forma clara, profesional y concisa.";
 
 if (!GEMINI_API_KEY) {
     console.error("❌ ERROR: GEMINI_API_KEY no encontrada en el entorno.");
     process.exit(1);
+}
+
+if (!process.env.IMAGE_API_PRIMARY_KEY) {
+    console.warn("⚠️ WARNING: IMAGE_API_PRIMARY_KEY is missing. Using fallback chain.");
+}
+
+if (!process.env.IMAGE_API_FALLBACK_KEY) {
+    console.warn("⚠️ WARNING: IMAGE_API_FALLBACK_KEY is missing. Using fallback chain.");
 }
 
 const app = express();
@@ -171,8 +183,8 @@ app.post("/api/generate", async (req, res) => {
                 await delay(1000);
 
                 const model = "imagen-4.0-fast-generate-001";
-                // Prioridad absoluta a la llave de imagen, si no existe usar la primaria de texto
-                const apiKey = process.env.GOOGLE_IMAGEN_API_KEY || GEMINI_API_KEY;
+                // Usar la llave primaria estandarizada
+                const apiKey = PRIMARY_IMAGE_API_KEY;
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`;
 
                 console.log(`Generando imagen con ${model} (REST)...`);
@@ -229,6 +241,71 @@ app.post("/api/generate", async (req, res) => {
                 isProcessingImage = false;
             }
             return;
+        }
+
+        // ===============================
+        // IMAGEN FALLBACK (Google Imagen 4.0 Fast via REST API)
+        // ===============================
+        if (type === "image-fallback" || req.path === "/api/generate-image-fallback") {
+            // Esperar si ya hay una imagen procesándose para serializar
+            while (isProcessingImage) {
+                await delay(500);
+            }
+
+            isProcessingImage = true;
+
+            try {
+                // Delay preventivo
+                await delay(2000);
+
+                const model = "imagen-4.0-fast-generate-001";
+                // En fallback, usamos la llave de respaldo dedicada
+                const apiKey = FALLBACK_IMAGE_API_KEY;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`;
+
+                console.log(`[FALLBACK] Generando imagen con ${model} (REST)...`);
+                
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        instances: [{ prompt: prompt }],
+                        parameters: { sampleCount: 1 }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error("[FALLBACK] Error de API Imagen:", data.error);
+                    throw new Error(data.error.message || "Error en fallback");
+                }
+
+                const imageBase64 = data.predictions?.[0]?.bytesBase64Encoded;
+
+                if (!imageBase64) {
+                    throw new Error("No se recibió imagen en fallback");
+                }
+
+                const imageUrl = `data:image/png;base64,${imageBase64}`;
+
+                console.log("✓ [FALLBACK] Imagen generada exitosamente");
+
+                return res.json({
+                    logo: imageUrl,
+                });
+            } catch (error) {
+                console.error("=== ERROR EN FALLBACK DE IMAGEN ===");
+                console.error(error.message);
+
+                res.status(500).json({
+                    error: "Error en proveedor de respaldo",
+                    message: error.message
+                });
+                return;
+            } finally {
+                isProcessingImage = false;
+            }
         }
 
 

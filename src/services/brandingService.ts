@@ -68,10 +68,10 @@ ${assistantMessages}
  * Handles markdown blocks and preamble text
  */
 function extractJSON(text: string): string {
-  // 1. Try to find markdown JSON block
-  const markdownMatch = text.match(/```json([\s\S]*?)```/);
-  if (markdownMatch && markdownMatch[1]) {
-    return markdownMatch[1].trim();
+  // 1. Try to find markdown JSON block (single or triple backticks)
+  const jsonBlock = text.match(/`json([\s\S]*?)`/);
+  if (jsonBlock && jsonBlock[1]) {
+    return jsonBlock[1].trim();
   }
 
   // 2. Look for the first "{" and the last "}"
@@ -83,6 +83,40 @@ function extractJSON(text: string): string {
   }
 
   return text.trim();
+}
+
+/**
+ * PRIMARY IMAGE PROVIDER
+ */
+async function generateImagePrimary(prompt: string): Promise<string> {
+  console.log("Using primary image provider");
+  const res = await callBackend({ type: "image", prompt });
+  if (res && res.logo) return res.logo;
+  throw new Error("Invalid response from primary provider");
+}
+
+/**
+ * FALLBACK IMAGE PROVIDER
+ */
+async function generateImageFallback(prompt: string): Promise<string> {
+  console.log("Fallback provider activated");
+  const res = await callBackend({ type: "image-fallback", prompt });
+  if (res && res.logo) return res.logo;
+  throw new Error("Invalid response from fallback provider");
+}
+
+/**
+ * UTILITY: Image Generation with Fallback
+ */
+async function generateImageWithFallback(prompt: string): Promise<string> {
+  try {
+    const url = await generateImagePrimary(prompt);
+    if (!url) throw new Error("Primary provider returned empty");
+    return url;
+  } catch (err) {
+    console.warn("Primary failed. Switching to fallback provider", err);
+    return await generateImageFallback(prompt);
+  }
 }
 
 /**
@@ -110,15 +144,16 @@ async function generateImageQueue(
         
         console.log(`📸 Generating image ${i + 1}/${total} (Attempt ${attempts}):`, prompt.substring(0, 50) + "...");
         
-        const res = await callBackend({ type: "image", prompt });
+        // USO DEL SISTEMA DE FALLBACK
+        const logoUrl = await generateImageWithFallback(prompt);
         
-        if (res && res.logo) {
-          results.push(res.logo);
+        if (logoUrl) {
+          results.push(logoUrl);
           success = true;
           // Guard delay after success
           await new Promise(resolve => setTimeout(resolve, 2500));
         } else {
-          throw new Error("Invalid response from image API");
+          throw new Error("Empty image URL returned");
         }
       } catch (error: any) {
         console.error(`❌ Image generation failed (${i + 1}/${total}):`, error);
@@ -127,8 +162,8 @@ async function generateImageQueue(
           console.log("⏳ Rate limit or error hit. Waiting 10s before retry...");
           await new Promise(resolve => setTimeout(resolve, 10000));
         } else {
-          console.warn("⚠️ Max attempts reached. Using fallback.");
-          results.push(""); // Push empty to maintain index, will be handled by caller
+          console.warn("⚠️ Max attempts reached. Returning empty slot.");
+          results.push(""); 
         }
       }
     }
@@ -225,12 +260,15 @@ Responde ESTRICTAMENTE en este formato JSON:
     console.log("RAW AI RESPONSE (Agent 1):", rawCreativeResponse);
 
     let creativeData;
+    let cleanedJson = "";
     try {
-      const cleanedJson = extractJSON(rawCreativeResponse);
+      cleanedJson = extractJSON(rawCreativeResponse);
       creativeData = JSON.parse(cleanedJson);
-      console.log('PARSED JSON (Agent 1):', creativeData);
+      console.log('EXTRACTED JSON (Agent 1):', cleanedJson);
+      // console.log('PARSED JSON (Agent 1):', creativeData);
     } catch (e) {
       console.error('❌ JSON PARSE FAILED (Agent 1):', e);
+      console.log("RAW RESPONSE:", rawCreativeResponse);
       // Fallback simple structure if parsing fails completely
       creativeData = {
         brandStrategy: {
@@ -302,17 +340,21 @@ Responde ESTRICTAMENTE en este formato JSON:
       console.log("RAW AI RESPONSE (Service Discovery):", rawDiscoveryResponse);
       
       let discoveryData;
+      let cleanedDiscovery = "";
       try {
-        const cleanedDiscovery = typeof rawDiscoveryResponse === 'string'
+        cleanedDiscovery = typeof rawDiscoveryResponse === 'string'
           ? extractJSON(rawDiscoveryResponse)
           : JSON.stringify(rawDiscoveryResponse);
           
         discoveryData = JSON.parse(cleanedDiscovery);
-        console.log("PARSED JSON (Service Discovery):", discoveryData);
+        console.log("EXTRACTED JSON (Service Discovery):", cleanedDiscovery);
+        // console.log("PARSED JSON (Service Discovery):", discoveryData);
         iconDefinitions = (discoveryData.services || []).slice(0, 6);
       } catch (parseError) {
         console.error("❌ JSON PARSE FAILED (Service Discovery):", parseError);
-        throw new Error("Failed to parse services");
+        console.log("RAW RESPONSE:", rawDiscoveryResponse);
+        // Fallback simple structure instead of throwing
+        discoveryData = null;
       }
     } catch (e) {
       console.warn("⚠️ Fallo descubrimiento de servicios, usando genéricos.");
