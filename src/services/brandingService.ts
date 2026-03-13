@@ -65,30 +65,29 @@ ${assistantMessages}
 
 /**
  * UTILITY: Extract JSON from AI response text
- * Handles markdown blocks and preamble text
+ * Handles markdown blocks, preamble text and extra characters
  */
 function extractJSON(rawText: string | null | undefined): string | null {
   if (!rawText) return null;
 
   try {
-    // Remove markdown code blocks
-    let cleaned = rawText
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+    // Trim first, then strip markdown code block markers (case-insensitive)
+    let cleaned = rawText.trim();
+    cleaned = cleaned.replace(/```json/gi, "");
+    cleaned = cleaned.replace(/```/g, "");
 
-    // Find first { and last }
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
+    console.log("CLEANED JSON:", cleaned);
 
-    if (start === -1 || end === -1) {
+    // Find JSON boundaries
+    const firstBrace = cleaned.indexOf("{");
+    const lastBrace = cleaned.lastIndexOf("}");
+
+    if (firstBrace === -1 || lastBrace === -1) {
       console.warn("extractJSON: could not locate JSON boundaries");
       return null;
     }
 
-    const jsonString = cleaned.substring(start, end + 1);
-
-    return jsonString;
+    return cleaned.substring(firstBrace, lastBrace + 1);
 
   } catch (err) {
     console.error("extractJSON failure:", err);
