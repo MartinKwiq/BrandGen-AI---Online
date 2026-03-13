@@ -290,12 +290,89 @@ Responde ESTRICTAMENTE en este formato JSON:
     console.log('PARSED JSON (Agent 1):', creativeData);
 
     // ===== VALIDACIÓN ESTRICTA DE PROPUESTAS =====
+    // Fully populated fallbacks — each with unique colors + typography so the pipeline
+    // always has rich data even when the AI response fails to parse.
     const DEFAULT_PROPOSALS = [
-      { name: "Tech Minimal", mood: "Modern Digital" },
-      { name: "Bold Startup", mood: "Energetic Disruptive" },
-      { name: "Premium Corporate", mood: "Elegant Trust" },
-      { name: "Future AI", mood: "Experimental Innovation" },
-      { name: "Human Friendly", mood: "Warm Accessible" }
+      {
+        name: "Tech Minimal",
+        mood: "Modern Digital",
+        description: "Funcionalidad, precisión y elegancia digital.",
+        logoDescription: "Geometría limpia, símbolo abstracto minimalista en azul eléctrico.",
+        iconStyle: "Line icons, trazo fino y uniforme",
+        colors: [
+          { name: "Primary",       hex: "#0EA5E9", usage: "Identidad" },
+          { name: "Secondary",     hex: "#38BDF8", usage: "Apoyo" },
+          { name: "Accent",        hex: "#06B6D4", usage: "CTA" },
+          { name: "Neutral Light", hex: "#F0F9FF", usage: "Superficies" },
+          { name: "Neutral Dark",  hex: "#0C4A6E", usage: "Texto" },
+          { name: "Background",    hex: "#FFFFFF", usage: "Fondo" }
+        ],
+        typography: { titulo: "Space Grotesk", cuerpo: "Inter" }
+      },
+      {
+        name: "Bold Startup",
+        mood: "Energetic Disruptive",
+        description: "Energía, disrupción y presencia visual máxima.",
+        logoDescription: "Símbolo dinámico con tensión visual, ángulos agresivos en naranja eléctrico.",
+        iconStyle: "Filled icons, alto contraste",
+        colors: [
+          { name: "Primary",       hex: "#F97316", usage: "Identidad" },
+          { name: "Secondary",     hex: "#FB923C", usage: "Apoyo" },
+          { name: "Accent",        hex: "#FACC15", usage: "CTA" },
+          { name: "Neutral Light", hex: "#FFF7ED", usage: "Superficies" },
+          { name: "Neutral Dark",  hex: "#431407", usage: "Texto" },
+          { name: "Background",    hex: "#0F0F0F", usage: "Fondo oscuro" }
+        ],
+        typography: { titulo: "Syne", cuerpo: "DM Sans" }
+      },
+      {
+        name: "Premium Corporate",
+        mood: "Elegant Trust",
+        description: "Lujo silencioso, confianza y autoridad de mercado.",
+        logoDescription: "Monograma serif en oro sobre fondo carbón profundo.",
+        iconStyle: "Duotone icons, refinados",
+        colors: [
+          { name: "Primary",       hex: "#1C1917", usage: "Identidad" },
+          { name: "Secondary",     hex: "#D4AF37", usage: "Apoyo" },
+          { name: "Accent",        hex: "#A8956B", usage: "CTA" },
+          { name: "Neutral Light", hex: "#FAF7F2", usage: "Superficies" },
+          { name: "Neutral Dark",  hex: "#3D3530", usage: "Texto" },
+          { name: "Background",    hex: "#F5F0EA", usage: "Fondo" }
+        ],
+        typography: { titulo: "Playfair Display", cuerpo: "Lora" }
+      },
+      {
+        name: "Future AI",
+        mood: "Experimental Innovation",
+        description: "Vanguardia tecnológica, identidad del futuro.",
+        logoDescription: "Forma generativa, gradiente futurista en violeta y cian.",
+        iconStyle: "Gradient icons, estilo cyber",
+        colors: [
+          { name: "Primary",       hex: "#7C3AED", usage: "Identidad" },
+          { name: "Secondary",     hex: "#06B6D4", usage: "Apoyo" },
+          { name: "Accent",        hex: "#EC4899", usage: "CTA" },
+          { name: "Neutral Light", hex: "#0F0F1A", usage: "Superficies oscuras" },
+          { name: "Neutral Dark",  hex: "#E2DEFF", usage: "Texto claro" },
+          { name: "Background",    hex: "#060612", usage: "Fondo" }
+        ],
+        typography: { titulo: "Orbitron", cuerpo: "Rajdhani" }
+      },
+      {
+        name: "Human Friendly",
+        mood: "Warm Accessible",
+        description: "Calidez humana, accesibilidad y conexión real.",
+        logoDescription: "Símbolo orgánico y redondeado, en verde terracota con formas fluidas.",
+        iconStyle: "Rounded icons, trazo suave",
+        colors: [
+          { name: "Primary",       hex: "#16A34A", usage: "Identidad" },
+          { name: "Secondary",     hex: "#D97706", usage: "Apoyo" },
+          { name: "Accent",        hex: "#F59E0B", usage: "CTA" },
+          { name: "Neutral Light", hex: "#F0FDF4", usage: "Superficies" },
+          { name: "Neutral Dark",  hex: "#14532D", usage: "Texto" },
+          { name: "Background",    hex: "#FFFBF5", usage: "Fondo cálido" }
+        ],
+        typography: { titulo: "Nunito", cuerpo: "Quicksand" }
+      }
     ];
 
     // Extraer el array de propuestas desde la respuesta del Director
@@ -420,11 +497,22 @@ Responde ESTRICTAMENTE en este formato JSON:
       }
 
       const rawTypography = direction.typography || direction.tipografias || null;
-      let normalizedTypography = rawTypography;
+      let normalizedTypography: any;
+
+      // Mood-based typography defaults so every proposal always has distinct fonts
+      const MOOD_FONTS: Record<string, { titulo: string; cuerpo: string }> = {
+        "Modern Digital":        { titulo: "Space Grotesk", cuerpo: "Inter" },
+        "Energetic Disruptive":  { titulo: "Syne",           cuerpo: "DM Sans" },
+        "Elegant Trust":         { titulo: "Playfair Display", cuerpo: "Lora" },
+        "Experimental Innovation":{ titulo: "Orbitron",      cuerpo: "Rajdhani" },
+        "Warm Accessible":       { titulo: "Nunito",         cuerpo: "Quicksand" },
+      };
+
+      const moodFonts = MOOD_FONTS[direction.mood] || { titulo: "DM Serif Display", cuerpo: "DM Sans" };
 
       if (rawTypography && typeof rawTypography === "object") {
-        const titleFont = rawTypography.titulo || rawTypography.titulos || "Inter";
-        const bodyFont = rawTypography.cuerpo || "DM Sans";
+        const titleFont = rawTypography.titulo || rawTypography.titulos || moodFonts.titulo;
+        const bodyFont  = rawTypography.cuerpo  || rawTypography.cuerpos || moodFonts.cuerpo;
         normalizedTypography = {
           heading: {
             name: titleFont,
@@ -437,6 +525,22 @@ Responde ESTRICTAMENTE en este formato JSON:
             fontFamily: `${bodyFont}, sans-serif`,
             usage: "Cuerpo",
             googleFont: bodyFont.replace(/\s+/g, '+')
+          }
+        };
+      } else {
+        // Always guaranteed — never null
+        normalizedTypography = {
+          heading: {
+            name: moodFonts.titulo,
+            fontFamily: `${moodFonts.titulo}, sans-serif`,
+            usage: "Títulos",
+            googleFont: moodFonts.titulo.replace(/\s+/g, '+')
+          },
+          body: {
+            name: moodFonts.cuerpo,
+            fontFamily: `${moodFonts.cuerpo}, sans-serif`,
+            usage: "Cuerpo",
+            googleFont: moodFonts.cuerpo.replace(/\s+/g, '+')
           }
         };
       }
