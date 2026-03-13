@@ -117,18 +117,19 @@ export async function saveBrandingProject(project) {
         
         const { data, error } = await supabase
             .from("brandgen_projects")
-            .insert([
+            .upsert([
                 {
                     id: project.id,
                     name: project.name || project.branding?.brandName || "Unnamed Project",
                     description: project.description || project.branding?.tagline || "",
                     branding: project.branding || project,
-                    status: "completed"
+                    status: "completed",
+                    updated_at: new Date().toISOString()
                 }
-            ]);
+            ], { onConflict: 'id' });
 
         if (error) {
-            console.error("SUPABASE INSERT ERROR:", error);
+            console.error("SUPABASE UPSERT ERROR:", error);
             throw error;
         }
 

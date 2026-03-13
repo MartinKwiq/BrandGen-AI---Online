@@ -71,23 +71,23 @@ function extractJSON(rawText: string | null | undefined): string | null {
   if (!rawText) return null;
 
   try {
-    // Trim first, then strip markdown code block markers (case-insensitive)
-    let cleaned = rawText.trim();
-    cleaned = cleaned.replace(/```json/gi, "");
-    cleaned = cleaned.replace(/```/g, "");
-
-    console.log("CLEANED JSON:", cleaned);
-
-    // Find JSON boundaries
-    const firstBrace = cleaned.indexOf("{");
-    const lastBrace = cleaned.lastIndexOf("}");
+    // Aggressive extraction: search for the first '{' and last '}' in the entire text
+    // This makes it immune to markdown markers or preamble text
+    const firstBrace = rawText.indexOf("{");
+    const lastBrace = rawText.lastIndexOf("}");
 
     if (firstBrace === -1 || lastBrace === -1) {
       console.warn("extractJSON: could not locate JSON boundaries");
+      console.log("RAW TEXT THAT FAILED:", rawText.substring(0, 500) + "...");
       return null;
     }
 
-    return cleaned.substring(firstBrace, lastBrace + 1);
+    const jsonCandidate = rawText.substring(firstBrace, lastBrace + 1);
+    
+    // Validate if it's at least looks like JSON
+    if (jsonCandidate.length < 2) return null;
+    
+    return jsonCandidate;
 
   } catch (err) {
     console.error("extractJSON failure:", err);
@@ -395,11 +395,11 @@ Responde ESTRICTAMENTE en este formato JSON:
 
     console.log("Total proposals:", directions.length);
 
-    // ===== AGENTE 2: DISEÑADOR GRÁFICO (Genera Logos con Imagen 3 via Backend) =====
+    // ===== AGENTE 2:DISEÑADOR GRÁFICO (Generación de Activos) =====
     onStep?.('Diseñando propuestas de color y tipografía...');
-    console.log('🎨 Agent 2: Graphic Designer (Backend Imagen 3)...');
+    console.log('🎨 Agent 2: Asset Generation...');
 
-    const proposals = [];
+    const proposals: any[] = [];
 
     // ===== UNIFIED BRAND DNA LAYER =====
     const strategy = creativeData.brandStrategy || {};
@@ -410,230 +410,35 @@ Responde ESTRICTAMENTE en este formato JSON:
       visualGuidelines: strategy.visual_style_guidelines || "Modern and professional aesthetic"
     };
 
-    // ===== PRE-LOOP: ICON SERVICE DISCOVERY (Shared for all proposals) =====
+    // ===== OPTIONAL: SERVICE DISCOVERY (Icons) =====
     onStep?.('Identificando servicios clave del negocio...');
     let iconDefinitions: any[] = [];
     try {
       const serviceDiscoveryPrompt = `
-        Actúa como un Especialista en UX/UI y Estrategia de Marca.
-        Marca: "${brandName}". Descripción del Negocio: "${description}".
-        Contexto de la Entrevista: "${chatContext || ''}".
-
-        TAREA: Identifica exactamente 6 servicios, secciones o categorías clave de este negocio para crear un sistema de iconos coherente para su interface digital.
-        
-        REGLAS:
-        1. Usa nombres de servicios reales y descriptivos (max 3 palabras).
-        2. Proporciona una explicación visual breve de cómo representar cada uno (ej: "Un engranaje con una lupa" para Soporte Técnico).
-        3. Asegúrate de que los 6 servicios cubran el espectro completo del negocio descubierto en la entrevista.
-
-        RESPONDE ESTRICTAMENTE EN JSON:
-        {"services": [{"name": "Nombre", "description": "Concepto visual"}]}
+        Identifica exactamente 6 servicios o categorías clave de este negocio: "${brandName}". 
+        Descripción: "${description}". ${chatContext ? `Contexto extra: ${chatContext}` : ''}
+        Responde ESTRICTAMENTE en JSON: {"services": [{"name": "Nombre", "description": "Concepto visual"}]}
       `;
       const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
-      const rawDiscoveryResponse = discoveryRes.result || discoveryRes;
-      console.log("RAW AI RESPONSE (Service Discovery):", rawDiscoveryResponse);
-      
-      const cleanedDiscovery = typeof rawDiscoveryResponse === 'string'
-        ? extractJSON(rawDiscoveryResponse)
-        : JSON.stringify(rawDiscoveryResponse); // Si ya vino parseado, lo tratamos normal aunque lo volveremos a parsear
-
-      console.log("EXTRACTED JSON (Service Discovery):", cleanedDiscovery);
-
-      let discoveryData = null;
-
-      try {
-        discoveryData = cleanedDiscovery ? JSON.parse(cleanedDiscovery) : null;
-      } catch (err) {
-        console.error("JSON PARSE FAILED (Service Discovery):", err);
-      }
-
-      if (!discoveryData) {
-        discoveryData = {
-          services: []
-        };
-      }
-
-      console.log("PARSED JSON (Service Discovery):", discoveryData);
+      const rawDiscovery = discoveryRes.result || discoveryRes;
+      const cleanedDiscovery = extractJSON(typeof rawDiscovery === 'string' ? rawDiscovery : JSON.stringify(rawDiscovery));
+      const discoveryData = cleanedDiscovery ? JSON.parse(cleanedDiscovery) : { services: [] };
       iconDefinitions = (discoveryData.services || []).slice(0, 6);
     } catch (e) {
-      console.warn("⚠️ Fallo descubrimiento de servicios, usando genéricos.");
-      iconDefinitions = [
-        { name: 'Servicio 1', description: 'Descripción 1' },
-        { name: 'Servicio 2', description: 'Descripción 2' },
-        { name: 'Servicio 3', description: 'Descripción 3' },
-        { name: 'Servicio 4', description: 'Descripción 4' },
-        { name: 'Servicio 5', description: 'Descripción 5' },
-        { name: 'Servicio 6', description: 'Descripción 6' }
-      ];
+      console.warn("⚠️ Error en descubrimiento de iconos, usando genéricos.");
+      iconDefinitions = Array.from({ length: 6 }, (_, i) => ({ name: `Servicio ${i + 1}`, description: 'Icono profesional' }));
     }
 
-    for (let i = 0; i < Math.min(5, directions.length); i++) {
-      const direction = directions[i];
-
-      const DEFAULT_PALETTE: BrandColor[] = [
-        { name: "Primary", hex: "#2563EB", usage: "Color principal" },
-        { name: "Secondary", hex: "#10B981", usage: "Color secundario" },
-        { name: "Accent", hex: "#F59E0B", usage: "Acentos" },
-        { name: "Neutral Light", hex: "#F3F4F6", usage: "Fondos claros" },
-        { name: "Neutral Dark", hex: "#374151", usage: "Textos" },
-        { name: "Background", hex: "#FFFFFF", usage: "Fondo base" }
-      ];
-
-      const rawColors = direction.colors || direction.paleta_colores || null;
-      let normalizedColors: BrandColor[];
-
-      if (Array.isArray(rawColors) && rawColors.length >= 1) {
-        normalizedColors = rawColors.map((c: any) => ({
-          name: c.name || c.nombre || "Color",
-          hex: c.hex || c.hexadecimal || (typeof c === 'string' ? c : "#6366f1"),
-          usage: c.usage || c.uso || "Uso general"
-        }));
-        // Pad to 6 if the AI returned fewer
-        while (normalizedColors.length < 6) {
-          normalizedColors.push(DEFAULT_PALETTE[normalizedColors.length]);
-        }
-      } else {
-        console.warn("[Palette] Missing colors from proposal. Using default palette.");
-        normalizedColors = DEFAULT_PALETTE;
-      }
-
-      const rawTypography = direction.typography || direction.tipografias || null;
-      let normalizedTypography: any;
-
-      // Mood-based typography defaults so every proposal always has distinct fonts
-      const MOOD_FONTS: Record<string, { titulo: string; cuerpo: string }> = {
-        "Modern Digital":        { titulo: "Space Grotesk", cuerpo: "Inter" },
-        "Energetic Disruptive":  { titulo: "Syne",           cuerpo: "DM Sans" },
-        "Elegant Trust":         { titulo: "Playfair Display", cuerpo: "Lora" },
-        "Experimental Innovation":{ titulo: "Orbitron",      cuerpo: "Rajdhani" },
-        "Warm Accessible":       { titulo: "Nunito",         cuerpo: "Quicksand" },
-      };
-
-      const moodFonts = MOOD_FONTS[direction.mood] || { titulo: "DM Serif Display", cuerpo: "DM Sans" };
-
-      if (rawTypography && typeof rawTypography === "object") {
-        const titleFont = rawTypography.titulo || rawTypography.titulos || moodFonts.titulo;
-        const bodyFont  = rawTypography.cuerpo  || rawTypography.cuerpos || moodFonts.cuerpo;
-        normalizedTypography = {
-          heading: {
-            name: titleFont,
-            fontFamily: `${titleFont}, sans-serif`,
-            usage: "Títulos",
-            googleFont: titleFont.replace(/\s+/g, '+')
-          },
-          body: {
-            name: bodyFont,
-            fontFamily: `${bodyFont}, sans-serif`,
-            usage: "Cuerpo",
-            googleFont: bodyFont.replace(/\s+/g, '+')
-          }
-        };
-      } else {
-        // Always guaranteed — never null
-        normalizedTypography = {
-          heading: {
-            name: moodFonts.titulo,
-            fontFamily: `${moodFonts.titulo}, sans-serif`,
-            usage: "Títulos",
-            googleFont: moodFonts.titulo.replace(/\s+/g, '+')
-          },
-          body: {
-            name: moodFonts.cuerpo,
-            fontFamily: `${moodFonts.cuerpo}, sans-serif`,
-            usage: "Cuerpo",
-            googleFont: moodFonts.cuerpo.replace(/\s+/g, '+')
-          }
-        };
-      }
-
-      const normalizedDirection = {
-        ...direction,
-        colors: normalizedColors,
-        typography: normalizedTypography,
-        visualDescription: direction.logoDescription || direction.descripcion_logo || direction.logo || 'Modern and professional design',
-        iconStyle: direction.iconStyle || direction.sistema_iconos || "Flat design"
-      };
-
-      let logoImageUrl = '';
-
-      onStep?.(`Generando logotipo para ${direction.mood || direction.name}...`);
-      const logoPrompt = `
-Conceptual brand symbol for "${brandName}".
-Territory: ${normalizedDirection.name} (${normalizedDirection.mood}).
-Concept: ${normalizedDirection.visualDescription}.
-
-BRAND DNA (IDENTITY ROOT):
-- Personality: ${brandDNA.personality.join(', ')}. 
-- Positioning: ${brandDNA.positioning}.
-- Audience: ${brandDNA.audience}.
-- Visual Rules: ${brandDNA.visualGuidelines}.
-
-DESIGN SPECS:
-- Style: Modern, minimal, vector style, flat design.
-- Composition: Centered, high contrast silhouette, symmetrical or perfectly balanced.
-- Execution: Simple, scalable, no text, no fonts, no fine lines, no gradients, white background.
-- Palette: ${normalizedDirection.colors?.map((c: any) => c.hex).join(', ') || 'Professional colors'}.
-- Goal: A world-class identity symbol for ${industry || 'this industry'}.
-`.trim();
-
-      const logoResults = await generateImageQueue([logoPrompt]);
-      logoImageUrl = logoResults[0] || generatePlaceholderLogo(brandName, normalizedDirection.colors?.[0]?.hex || '#6366f1');
-
-      // HELPER: Saneado de strings para evitar que objetos de la IA crasheen React
-      const safeStr = (val: any, fallback: string = ""): string => {
-        if (!val) return fallback;
-        if (typeof val === 'string') return val;
-        if (typeof val === 'object') {
-          return val.nombre || val.texto || val.name || val.text || val.valor || val.value || JSON.stringify(val);
-        }
-        return String(val);
-      };
-
-      const proposal = {
-        id: i + 1,
-        name: safeStr(normalizedDirection.name, `Propuesta ${i + 1}`),
-        description: safeStr(normalizedDirection.description, `Diseño para ${brandName}`),
-        mood: safeStr(normalizedDirection.mood, 'moderno'),
-        logo: logoImageUrl,
-        colorScheme: normalizedDirection.colors?.map((c: any) => c.hex || c) || ['#6366f1', '#8b5cf6', '#ec4899', '#f9fafb', '#111827', '#ffffff'],
-        colors: normalizedDirection.colors || generateFallbackColors(),
-        typography: normalizedDirection.typography || {
-          heading: { name: 'Inter', fontFamily: 'Inter, sans-serif', usage: 'Títulos', googleFont: 'Inter' },
-          body: { name: 'DM Sans', fontFamily: 'DM Sans, sans-serif', usage: 'Cuerpo', googleFont: 'DM+Sans' }
-        },
-        icons: [] as BrandIcon[], // Icons will be assigned after the loop (shared generation)
-        applications: ['Website', 'Redes sociales', 'Tarjetas de presentación', 'Email firma', 'Empaque'],
-      };
-
-      proposals.push(proposal);
-
-      // 🚀 Emit proposal immediately so UI can show it without waiting for icons
-      if (onProposalReady) {
-        console.log(`📡 Proposal ${i + 1} ready — emitting to UI`);
-        onProposalReady(proposal, i);
-      }
-    }
-
-    // ===== SHARED ICON GENERATION (6 calls total instead of 30) =====
-    // Icons represent the brand’s services — same for all proposals, styled neutrally.
-    // Each proposal applies its own primary color to tint icons in the UI.
+    // ===== PHASE 1.5: SHARED ICON GENERATION =====
+    // Generamos los iconos ANTES que las propuestas para que cada propuesta 
+    // emitida tenga ya su iconografía completa.
     onStep?.('Generando set de íconos del negocio...');
     console.log('🎨 Generating shared icon set (6 calls)...');
 
-    const sharedIconPrompts = iconDefinitions.map(def => {
-      return `
-Design a professional UI icon for the service: "${def.name}".
-Visual concept: ${def.description || def.name}.
-Brand: ${brandName}. Industry: ${industry || 'professional services'}.
-
-REQUIREMENTS:
-1. Clean flat vector icon, minimal, scalable. Style: Phosphor/Lucide icon family.
-2. Monochrome base using #6366f1 on white background.
-3. Uniform stroke weight and geometric language across the set.
-4. NO text, no letters, no photorealistic shadows, no complex backgrounds.
-5. Centered on a clean white canvas. High quality digital illustration.
-`.trim();
-    });
+    const sharedIconPrompts = iconDefinitions.map(def => `
+      Minimalist flat vector icon for "${def.name}". Concept: ${def.description}. 
+      Style: Clean line art, Lucide style, monochrome black on white background. No text.
+    `);
 
     const sharedIconImages = await generateImageQueue(sharedIconPrompts, (current, total) => {
       onStep?.(`Generando ícono de negocio ${current}/${total}...`);
@@ -646,35 +451,87 @@ REQUIREMENTS:
         : generateFallbackIcon(def?.name?.toLowerCase() || 'icon');
     });
 
-    console.log(`✅ Shared icons ready: ${sharedIcons.length} icons`);
+    // ===== PHASE 2: PROPOSAL PROGRESSIVE GENERATION =====
+    for (let i = 0; i < directions.length; i++) {
+      const direction = directions[i];
 
-    // Assign shared icons to every proposal
-    proposals.forEach(p => { p.icons = sharedIcons; });
+      // Normalización de Colores
+      const DEFAULT_PALETTE: BrandColor[] = [
+        { name: "Primary", hex: "#2563EB", usage: "Color principal" },
+        { name: "Secondary", hex: "#10B981", usage: "Apoyo" },
+        { name: "Accent", hex: "#F59E0B", usage: "CTA" },
+        { name: "Neutral Light", hex: "#F3F4F6", usage: "Fondos" },
+        { name: "Neutral Dark", hex: "#374151", usage: "Texto" },
+        { name: "Background", hex: "#FFFFFF", usage: "Fondo Base" }
+      ];
 
-    if (!proposals.length) {
-      throw new Error("No se generaron propuestas desde el backend");
+      const rawColors = direction.colors || direction.paleta_colores || [];
+      const normalizedColors: BrandColor[] = Array.isArray(rawColors) && rawColors.length >= 1
+        ? rawColors.map((c: any) => ({
+            name: c.name || c.nombre || "Color",
+            hex: c.hex || c.hexadecimal || (typeof c === 'string' ? c : "#6366f1"),
+            usage: c.usage || c.uso || "General"
+          })).slice(0, 6)
+        : DEFAULT_PALETTE;
+      
+      while (normalizedColors.length < 6) normalizedColors.push(DEFAULT_PALETTE[normalizedColors.length]);
+
+      // Normalización de Tipografía
+      const rawTypo = direction.typography || direction.tipografias || {};
+      const titleFont = rawTypo.titulo || rawTypo.titulos || 'Inter';
+      const bodyFont  = rawTypo.cuerpo  || rawTypo.cuerpos || 'DM Sans';
+      const normalizedTypography = {
+        heading: { name: titleFont, fontFamily: `${titleFont}, sans-serif`, usage: "Títulos", googleFont: titleFont.replace(/\s+/g, '+') },
+        body: { name: bodyFont, fontFamily: `${bodyFont}, sans-serif`, usage: "Cuerpo", googleFont: bodyFont.replace(/\s+/g, '+') }
+      };
+
+      // Generación de Logotipo
+      const logoPrompt = `Conceptual brand symbol for "${brandName}". Concept: ${direction.logoDescription || direction.mood}. Visual Personality: ${brandDNA.personality.join(', ')}. Minimal vector silhouette, high quality, white background. Palette: ${normalizedColors.map(c => c.hex).join(', ')}.`;
+      
+      onStep?.(`Generando logotipo para ${direction.name || `Propuesta ${i+1}`}...`);
+      const logoResults = await generateImageQueue([logoPrompt]);
+      const logoImageUrl = logoResults[0] || generatePlaceholderLogo(brandName, normalizedColors[0].hex);
+
+      // Saneado de campos
+      const safeStr = (v: any, f: string) => (typeof v === 'string' ? v : (v?.name || v?.text || f));
+
+      const proposal = {
+        id: i + 1,
+        name: safeStr(direction.name, `Propuesta ${i + 1}`),
+        description: safeStr(direction.description, "Diseño de identidad visual"),
+        mood: safeStr(direction.mood, "moderno"),
+        logo: logoImageUrl,
+        colorScheme: normalizedColors.map(c => c.hex),
+        colors: normalizedColors,
+        typography: normalizedTypography,
+        icons: sharedIcons,
+        applications: ['Website', 'Redes sociales', 'Presentaciones', 'Firma Email']
+      };
+
+      proposals.push(proposal);
+
+      if (onProposalReady) {
+        onProposalReady(proposal, i);
+      }
     }
 
-    const mainProposal = proposals[0];
+    onStep?.('Integrando resultado final...');
+    const mainProposal = proposals[0] || generateFallbackBranding(brandName, description).proposals[0];
 
-    onStep?.('Finalizando tu identidad visual...');
-    const brandingResult = {
+    const brandingResult: BrandBranding = {
       brandName,
       tagline: generateTagline(brandName, description),
       logo: mainProposal.logo,
       colors: mainProposal.colors,
       typography: mainProposal.typography,
       icons: mainProposal.icons,
-      strategy: creativeData.brandStrategy, // Include the new brand strategy
+      strategy: creativeData.brandStrategy,
       proposals: proposals.map(p => ({
         id: p.id,
         name: p.name,
         description: p.description,
         colorScheme: p.colorScheme,
-        typography: {
-          titulo: p.typography?.heading?.name || 'Inter',
-          cuerpo: p.typography?.body?.name || 'DM Sans'
-        },
+        typography: { titulo: p.typography.heading.name, cuerpo: p.typography.body.name },
         mood: p.mood,
         applications: p.applications,
         logo: p.logo,
@@ -685,7 +542,7 @@ REQUIREMENTS:
     return brandingResult;
 
   } catch (error) {
-    console.error('❌ Error in backend branding generation:', error);
+    console.error('❌ Error in branding generation:', error);
     return generateFallbackBranding(brandName, description);
   }
 }
