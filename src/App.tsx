@@ -63,8 +63,9 @@ function AppContent() {
       setView('settings');
       return;
     }
-    await generateBrandingForProject();
+    // Switch to guide view immediately — proposals will appear progressively
     setView('guide');
+    await generateBrandingForProject();
   };
 
   const handleSelectProject = (id: string) => {

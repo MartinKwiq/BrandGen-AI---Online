@@ -190,7 +190,8 @@ export async function generateBranding(
   industry?: string,
   targetAudience?: string,
   chatContext?: string,
-  onStep?: (step: string) => void
+  onStep?: (step: string) => void,
+  onProposalReady?: (proposal: any, index: number) => void
 ): Promise<BrandBranding> {
 
   try {
@@ -578,61 +579,17 @@ DESIGN SPECS:
       const logoResults = await generateImageQueue([logoPrompt]);
       logoImageUrl = logoResults[0] || generatePlaceholderLogo(brandName, normalizedDirection.colors?.[0]?.hex || '#6366f1');
 
-      const icons: BrandIcon[] = [];
-
-      onStep?.(`Creando iconos para ${direction.mood || direction.name}...`);
-      
-      const iconPrompts = iconDefinitions.map(def => {
-        const primaryHex = normalizedDirection.colors?.[0]?.hex || '#6366f1';
-        return `
-Diseña un icono de interface de usuario (UI) para el servicio: "${def.name}".
-Concepto Visual: ${def.description || def.name}.
-Territorio Creativo: ${normalizedDirection.name} (${normalizedDirection.mood}).
-
-BRAND DNA (Source of Truth):
-- Personality: ${brandDNA.personality.join(', ')}.
-- Positioning: ${brandDNA.positioning}.
-- Visual Guidelines: ${brandDNA.visualGuidelines}.
-
-REGLAS DE COHERENCIA (Familia de Iconos):
-1. **Uniformes**: Este icono DEBE pertenecer a una familia de 6 iconos. Usa el mismo grosor de línea (stroke), mismo lenguaje geométrico y mismo nivel de detalle que un set profesional de iconos (estilo Phosphor o Lucide).
-2. **Estética**: Estilo vector limpio, minimalista y escalable.
-3. **Color**: Usa gradientes suaves basados en ${primaryHex}.
-4. **Fondo**: Centrado en un lienzo blanco limpio o transparente. Sin bordes innecesarios.
-5. **Prohibido**: NO incluyas texto, letras, ni sombras fotorealistas. No uses fondos complejos.
-6. **Output**: Ilustración digital de alta calidad, estilo profesional para aplicaciones modernas.
-`.trim();
-      });
-
-      const iconImages = await generateImageQueue(iconPrompts, (current, total) => {
-        onStep?.(`Generando icono ${current}/${total} para ${direction.mood}...`);
-      });
-
-      iconImages.forEach((img, idx) => {
-        const def = iconDefinitions[idx];
-        if (img) {
-          icons.push({
-            name: def.name,
-            svg: img,
-            description: def.description || `Icono de ${def.name}`
-          });
-        } else {
-          icons.push(generateFallbackIcon(def.name.toLowerCase()));
-        }
-      });
-
       // HELPER: Saneado de strings para evitar que objetos de la IA crasheen React
       const safeStr = (val: any, fallback: string = ""): string => {
         if (!val) return fallback;
         if (typeof val === 'string') return val;
-        // Si la IA devolvió un objeto con keys como {nombre, estilo} o {texto, valor}
         if (typeof val === 'object') {
           return val.nombre || val.texto || val.name || val.text || val.valor || val.value || JSON.stringify(val);
         }
         return String(val);
       };
 
-      proposals.push({
+      const proposal = {
         id: i + 1,
         name: safeStr(normalizedDirection.name, `Propuesta ${i + 1}`),
         description: safeStr(normalizedDirection.description, `Diseño para ${brandName}`),
@@ -644,10 +601,55 @@ REGLAS DE COHERENCIA (Familia de Iconos):
           heading: { name: 'Inter', fontFamily: 'Inter, sans-serif', usage: 'Títulos', googleFont: 'Inter' },
           body: { name: 'DM Sans', fontFamily: 'DM Sans, sans-serif', usage: 'Cuerpo', googleFont: 'DM+Sans' }
         },
-        icons: icons,
+        icons: [] as BrandIcon[], // Icons will be assigned after the loop (shared generation)
         applications: ['Website', 'Redes sociales', 'Tarjetas de presentación', 'Email firma', 'Empaque'],
-      });
+      };
+
+      proposals.push(proposal);
+
+      // 🚀 Emit proposal immediately so UI can show it without waiting for icons
+      if (onProposalReady) {
+        console.log(`📡 Proposal ${i + 1} ready — emitting to UI`);
+        onProposalReady(proposal, i);
+      }
     }
+
+    // ===== SHARED ICON GENERATION (6 calls total instead of 30) =====
+    // Icons represent the brand’s services — same for all proposals, styled neutrally.
+    // Each proposal applies its own primary color to tint icons in the UI.
+    onStep?.('Generando set de íconos del negocio...');
+    console.log('🎨 Generating shared icon set (6 calls)...');
+
+    const sharedIconPrompts = iconDefinitions.map(def => {
+      return `
+Design a professional UI icon for the service: "${def.name}".
+Visual concept: ${def.description || def.name}.
+Brand: ${brandName}. Industry: ${industry || 'professional services'}.
+
+REQUIREMENTS:
+1. Clean flat vector icon, minimal, scalable. Style: Phosphor/Lucide icon family.
+2. Monochrome base using #6366f1 on white background.
+3. Uniform stroke weight and geometric language across the set.
+4. NO text, no letters, no photorealistic shadows, no complex backgrounds.
+5. Centered on a clean white canvas. High quality digital illustration.
+`.trim();
+    });
+
+    const sharedIconImages = await generateImageQueue(sharedIconPrompts, (current, total) => {
+      onStep?.(`Generando ícono de negocio ${current}/${total}...`);
+    });
+
+    const sharedIcons: BrandIcon[] = sharedIconImages.map((img, idx) => {
+      const def = iconDefinitions[idx];
+      return img
+        ? { name: def.name, svg: img, description: def.description || `Icono de ${def.name}` }
+        : generateFallbackIcon(def?.name?.toLowerCase() || 'icon');
+    });
+
+    console.log(`✅ Shared icons ready: ${sharedIcons.length} icons`);
+
+    // Assign shared icons to every proposal
+    proposals.forEach(p => { p.icons = sharedIcons; });
 
     if (!proposals.length) {
       throw new Error("No se generaron propuestas desde el backend");

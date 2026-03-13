@@ -183,13 +183,45 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         chatContextLength: chatContext.length,
       });
 
+      // Progressive state for proposal-by-proposal rendering
+      let progressiveProposals: any[] = [];
+
+      // Navigate to guide immediately when generation starts
+      // (the parent App will switch views once isGenerating = true)
+
       const branding = await generateBranding(
         currentProject.name,
         currentProject.description,
         undefined, // industry
         undefined, // targetAudience
         chatContext, // Pass chat context
-        (step) => setGenerationStep(step) // Pass progress callback
+        (step) => setGenerationStep(step), // onStep progress callback
+        (proposal, index) => {
+          // ===== onProposalReady: emit proposal to UI immediately =====
+          console.log(`🟢 onProposalReady triggered for proposal ${index + 1}`);
+          progressiveProposals = [...progressiveProposals];
+          progressiveProposals[index] = proposal;
+
+          // Build a partial branding object with what we have so far
+          const partialBranding = {
+            brandName: currentProject.name,
+            logo: progressiveProposals[0]?.logo || '',
+            tagline: '',
+            colors: progressiveProposals[0]?.colors || [],
+            colorScheme: progressiveProposals[0]?.colorScheme || [],
+            typography: progressiveProposals[0]?.typography || null,
+            icons: [],
+            proposals: progressiveProposals.filter(Boolean),
+            brandStrategy: null,
+            finalBrandSystem: null,
+          };
+
+          // Update the project state immediately so the UI can render
+          setCurrentProject(prev => {
+            if (!prev) return prev;
+            return { ...prev, status: 'generating', branding: partialBranding as any };
+          });
+        }
       );
 
       const updatedProject: BrandProject = {
