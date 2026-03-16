@@ -18,6 +18,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
   const { currentProject, updateProject } = useBrand();
   const [activeSection, setActiveSection] = useState('guideline');
   const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedLogoForLightbox, setSelectedLogoForLightbox] = useState<string | null>(null);
   const { t } = useTranslation();
 
   const sections = [
@@ -633,7 +634,11 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                       <div className="h-32 p-6 flex items-end" style={{ backgroundColor: currentColors[0].hex }}>
                         <div className="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center text-white">
                           {currentIcons[0] && (
-                            <div className="w-6 h-6" dangerouslySetInnerHTML={{ __html: currentIcons[0].svg.replace(/currentColor/g, '#fff') }} />
+                            currentIcons[0].svg.startsWith('/') || currentIcons[0].svg.startsWith('http') || currentIcons[0].svg.startsWith('data:') ? (
+                              <img src={currentIcons[0].svg.startsWith('/') ? `${BACKEND_URL}${currentIcons[0].svg}` : currentIcons[0].svg} className="w-6 h-6 object-contain filter brightness-0 invert" alt="Icon" />
+                            ) : (
+                              <div className="w-6 h-6" dangerouslySetInnerHTML={{ __html: currentIcons[0].svg.replace(/currentColor/g, '#fff') }} />
+                            )
                           )}
                         </div>
                       </div>
@@ -646,7 +651,11 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                           {currentIcons.slice(1, 5).map((icon, i) => (
                             <div key={i} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
                               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${currentColors[i + 1]?.hex || currentColors[0].hex}15`, color: currentColors[i + 1]?.hex || currentColors[0].hex }}>
-                                <div className="w-5 h-5 font-bold" dangerouslySetInnerHTML={{ __html: icon.svg }} />
+                                {icon.svg.startsWith('/') || icon.svg.startsWith('http') || icon.svg.startsWith('data:') ? (
+                                  <img src={icon.svg.startsWith('/') ? `${BACKEND_URL}${icon.svg}` : icon.svg} className="w-5 h-5 object-contain" alt="Icon" />
+                                ) : (
+                                  <div className="w-5 h-5 font-bold" dangerouslySetInnerHTML={{ __html: icon.svg }} />
+                                )}
                               </div>
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{icon.name}</p>
                             </div>
@@ -708,8 +717,12 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                     <div className="w-full max-w-sm aspect-[1.75/1] bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden relative group">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-slate-900 rounded-bl-[100px] transition-all group-hover:w-full group-hover:h-full group-hover:rounded-none group-hover:opacity-10 opacity-5" />
                       <div className="h-full flex flex-col justify-between p-8 relative z-10">
-                        <div className="h-10 w-auto">
-                          <div className="h-full flex items-center" dangerouslySetInnerHTML={{ __html: currentLogo.replace(/currentColor/g, currentColors[0].hex).replace(/width="\d+"/, 'height="100%"') }} />
+                        <div className="h-10 w-auto flex items-center">
+                          {currentLogo.startsWith('/') || currentLogo.startsWith('http') || currentLogo.startsWith('data:') ? (
+                            <img src={currentLogo.startsWith('/') ? `${BACKEND_URL}${currentLogo}` : currentLogo} className="h-full object-contain" alt="Logo" />
+                          ) : (
+                            <div className="h-full flex items-center" dangerouslySetInnerHTML={{ __html: currentLogo.replace(/currentColor/g, currentColors[0].hex).replace(/width="\d+"/, 'height="100%"') }} />
+                          )}
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.3em] mb-1">Corporate Identity</p>
@@ -762,9 +775,21 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         )}
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-slate-900 p-1 flex items-center justify-center">
+                          <div 
+                            className="w-12 h-12 rounded-lg bg-slate-900 p-2 flex items-center justify-center relative group/zoom cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (p.logo) setSelectedLogoForLightbox(p.logo);
+                            }}
+                            title="Haz clic para agrandar el logotipo"
+                          >
                             {p.logo && (
-                              <img src={p.logo.startsWith('/') ? `${BACKEND_URL}${p.logo}` : p.logo} className="w-full h-full object-contain" alt="Logo" />
+                              <>
+                                <img src={p.logo.startsWith('/') ? `${BACKEND_URL}${p.logo}` : p.logo} className="w-full h-full object-contain" alt="Logo" />
+                                <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover/zoom:opacity-100 transition-opacity">
+                                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                                </div>
+                              </>
                             )}
                           </div>
                           <p className="text-xs font-semibold uppercase text-slate-400">Propuesta {p.id}</p>
@@ -892,7 +917,13 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                         <div className="flex items-center gap-2">
                           <div className="flex -space-x-1">
                             {p.icons?.slice(0, 3).map((icon, i) => (
-                              <div key={i} className="w-5 h-5 rounded-md bg-slate-100 p-0.5 border border-white" dangerouslySetInnerHTML={{ __html: icon.svg }} />
+                              <div key={i} className="w-6 h-6 rounded-md bg-white p-1 border border-slate-200 shadow-sm flex items-center justify-center overflow-hidden">
+                                {icon.svg.startsWith('/') || icon.svg.startsWith('http') || icon.svg.startsWith('data:') ? (
+                                  <img src={icon.svg.startsWith('/') ? `${BACKEND_URL}${icon.svg}` : icon.svg} className="w-full h-full object-contain" alt="Icon" />
+                                ) : (
+                                  <div className="w-full h-full text-slate-600" dangerouslySetInnerHTML={{ __html: icon.svg }} />
+                                )}
+                              </div>
                             ))}
                           </div>
                           <p className="text-xs font-semibold uppercase text-slate-400">Propuesta {p.id}</p>
@@ -1017,6 +1048,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
       </div>
 
       {/* Export Modal */}
+      {/* Export Modal */}
       {showExportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-scale-in">
@@ -1073,6 +1105,31 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
             >
               {t('brandGuide', 'cancel')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Modal para Logos */}
+      {selectedLogoForLightbox && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
+          style={{ backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
+          onClick={() => setSelectedLogoForLightbox(null)}
+        >
+          <div className="relative w-full max-w-4xl bg-slate-900 p-8 rounded-[2rem] shadow-2xl flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setSelectedLogoForLightbox(null)}
+              className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
+            >
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div className="w-full h-[60vh] flex items-center justify-center p-8 bg-white/5 rounded-3xl border border-white/10">
+              {selectedLogoForLightbox.startsWith('/') || selectedLogoForLightbox.startsWith('http') || selectedLogoForLightbox.startsWith('data:') ? (
+                <img src={selectedLogoForLightbox.startsWith('/') ? `${BACKEND_URL}${selectedLogoForLightbox}` : selectedLogoForLightbox} className="max-w-full max-h-full object-contain drop-shadow-2xl" alt="Logo Expanded" />
+              ) : (
+                <div className="max-w-full max-h-full flex items-center justify-center drop-shadow-2xl text-white" dangerouslySetInnerHTML={{ __html: selectedLogoForLightbox.replace(/width="\d+"/, 'width="100%"').replace(/height="\d+"/, 'height="100%"') }} />
+              )}
+            </div>
           </div>
         </div>
       )}

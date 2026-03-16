@@ -33,6 +33,7 @@ const BrandContext = createContext<BrandContextType | null>(null);
 export function BrandProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<BrandProject[]>([]);
   const [currentProject, setCurrentProject] = useState<BrandProject | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Load projects on mount
   useEffect(() => {
@@ -67,7 +68,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         name,
         description,
         createdAt: new Date(),
-        updatedAt: new Date(),
+        updated_at: new Date(),
         status: 'draft',
         messages: [
           {
@@ -242,7 +243,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
             timestamp: new Date(),
           },
         ],
-        updatedAt: new Date(),
+        updated_at: new Date(),
       };
 
       setCurrentProject(updatedProject);
@@ -291,10 +292,15 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     setCurrentProject(null);
   }, []);
 
-  const updateProject = useCallback(async (project: BrandProject) => {
+  const updateProject = useCallback((project: BrandProject) => {
     setCurrentProject(project);
-    await saveProject(project);
     setProjects(prev => prev.map(p => p.id === project.id ? project : p));
+    
+    // Debounce network save to prevent UI freeze during rapid Mixer clicks
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      saveProject(project).catch(error => console.error("Error background saving project:", error));
+    }, 1000);
   }, []);
 
   return (
