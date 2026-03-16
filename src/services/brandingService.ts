@@ -65,30 +65,42 @@ ${assistantMessages}
 
 /**
  * UTILITY: Extract JSON from AI response text
- * Handles markdown blocks, preamble text and extra characters
+ * Heavy-duty version: handles markdown, invisible chars, and common AI noise
  */
 function extractJSON(rawText: string | null | undefined): string | null {
   if (!rawText) return null;
 
   try {
-    // Aggressive extraction: search for the first '{' and last '}' in the entire text
-    // This makes it immune to markdown markers or preamble text
-    const firstBrace = rawText.indexOf("{");
-    const lastBrace = rawText.lastIndexOf("}");
+    // 1. Clean invisible characters and common markdown artifacts
+    let text = rawText.trim();
+    
+    // 2. Locate boundaries
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
 
     if (firstBrace === -1 || lastBrace === -1) {
-      console.warn("extractJSON: could not locate JSON boundaries");
-      console.log("RAW TEXT THAT FAILED:", rawText.substring(0, 500) + "...");
+      console.warn("extractJSON: No braces found in text.");
+      console.log("DEBUG RAW START:", rawText.substring(0, 100));
       return null;
     }
 
-    const jsonCandidate = rawText.substring(firstBrace, lastBrace + 1);
+    let jsonCandidate = text.substring(firstBrace, lastBrace + 1);
     
-    // Validate if it's at least looks like JSON
-    if (jsonCandidate.length < 2) return null;
-    
-    return jsonCandidate;
+    // 3. Simple cleanup (remove common LLM "markdown code block" noise if still present)
+    jsonCandidate = jsonCandidate.replace(/```json/gi, '').replace(/```/g, '').trim();
 
+    // 4. Final validation check
+    try {
+      JSON.parse(jsonCandidate);
+      return jsonCandidate;
+    } catch (parseErr) {
+      console.warn("extractJSON parse fail, attempting aggressive cleanup...");
+      // Extreme cleanup: remove anything before first { and after last }
+      const cleanRegex = /\{[\s\S]*\}/;
+      const matches = rawText.match(cleanRegex);
+      if (matches) return matches[0];
+      return null;
+    }
   } catch (err) {
     console.error("extractJSON failure:", err);
     return null;

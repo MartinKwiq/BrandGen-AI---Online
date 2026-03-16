@@ -96,7 +96,7 @@ export async function saveProject(project) {
     const projectFilePath = path.join(projectDir, "project.json");
     await fs.writeJson(projectFilePath, {
         ...project,
-        updatedAt: new Date().toISOString()
+        updated_at: new Date().toISOString()
     }, { spaces: 2 });
 
     return project;
@@ -113,7 +113,8 @@ export async function saveBrandingProject(project) {
     }
 
     try {
-        console.log("Saving project to Supabase...", project.id);
+        const timestamp = new Date().toISOString();
+        console.log(`💾 Persisting project ${project.id} to Supabase...`);
         
         const { data, error } = await supabase
             .from("brandgen_projects")
@@ -124,18 +125,18 @@ export async function saveBrandingProject(project) {
                     description: project.description || project.branding?.tagline || "",
                     branding: project.branding || project,
                     status: "completed",
-                    updated_at: new Date().toISOString()
+                    updated_at: timestamp
                 }
             ], { onConflict: 'id' });
 
         if (error) {
-            console.error("SUPABASE UPSERT ERROR:", error);
+            console.error("❌ SUPABASE UPSERT ERROR:", error);
             throw error;
         }
 
-        console.log("Project successfully saved to Supabase:", data);
+        console.log(`✅ Project ${project.id} successfully saved to Supabase.`);
     } catch (err) {
-        console.error("SAVE BRANDING PROJECT FAILED:", err);
+        console.error(`❌ SAVE BRANDING PROJECT FAILED for ${project.id}:`, err);
     }
 }
 
