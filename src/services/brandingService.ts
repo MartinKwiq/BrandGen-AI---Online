@@ -500,6 +500,7 @@ Responde ESTRICTAMENTE en este formato JSON:
       // Generación de Logotipo mejorada para identidad específica
       const logoPrompt = `A professional, high-end vector logo design for the company called "${brandName}".
         CRITICAL REQUIREMENT: The exact text "${brandName}" MUST be included prominently and legibly as part of the logo (e.g., as a logotype or under the brand symbol).
+        DO NOT include color hex codes, palette names, or any other text in the image besides the company name.
         Visual Concept: ${direction.logoDescription || direction.mood}. 
         Aesthetic: ${brandDNA.visualGuidelines}. 
         Personality: ${brandDNA.personality.join(', ')}. 
