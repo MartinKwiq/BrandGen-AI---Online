@@ -497,8 +497,15 @@ Responde ESTRICTAMENTE en este formato JSON:
         body: { name: bodyFont, fontFamily: `${bodyFont}, sans-serif`, usage: "Cuerpo", googleFont: bodyFont.replace(/\s+/g, '+') }
       };
 
-      // Generación de Logotipo
-      const logoPrompt = `Conceptual brand symbol for "${brandName}". Concept: ${direction.logoDescription || direction.mood}. Visual Personality: ${brandDNA.personality.join(', ')}. Minimal vector silhouette, high quality, white background. Palette: ${normalizedColors.map(c => c.hex).join(', ')}.`;
+      // Generación de Logotipo mejorada para identidad específica
+      const logoPrompt = `A professional, high-end vector logo design for the company called "${brandName}".
+        CRITICAL REQUIREMENT: The exact text "${brandName}" MUST be included prominently and legibly as part of the logo (e.g., as a logotype or under the brand symbol).
+        Visual Concept: ${direction.logoDescription || direction.mood}. 
+        Aesthetic: ${brandDNA.visualGuidelines}. 
+        Personality: ${brandDNA.personality.join(', ')}. 
+        Requirements: Minimalist vector logo, high fidelity, white background, centered, readable typography integration. 
+        Palette used for the graphic elements: ${normalizedColors.map(c => c.hex).join(', ')}. 
+        Avoid generic placeholders; the text "${brandName}" is mandatory.`;
       
       onStep?.(`Generando logotipo para ${direction.name || `Propuesta ${i+1}`}...`);
       const logoResults = await generateImageQueue([logoPrompt]);
