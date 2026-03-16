@@ -142,7 +142,10 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const response = await getAIResponse(chatMessages);
+      const response = await getAIResponse(chatMessages, { 
+        brandName: currentProject.name, 
+        description: currentProject.description 
+      });
 
       // Check for success phrase
       const isComplete = response.includes("Generar Branding");

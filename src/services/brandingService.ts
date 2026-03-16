@@ -554,18 +554,6 @@ function generatePlaceholderLogo(_brandName: string, color: string): string {
   </svg>`)}`;
 }
 
-// Helper function to generate fallback colors
-function generateFallbackColors(): BrandColor[] {
-  return [
-    { name: 'Primario', hex: '#00d1b2', usage: 'Color principal' },
-    { name: 'Secundario', hex: '#00b89c', usage: 'Elementos de apoyo' },
-    { name: 'Acento', hex: '#e481a5', usage: 'Llamada a la acción' },
-    { name: 'Fondo Claro', hex: '#f9fafb', usage: 'Backgrounds' },
-    { name: 'Fondo Oscuro', hex: '#111827', usage: 'Texto sobre oscuro' },
-    { name: 'Soporte', hex: '#ffffff', usage: 'Tarjetas' },
-  ];
-}
-
 // Helper function to generate fallback icon
 function generateFallbackIcon(name: string): BrandIcon {
   const iconPaths: Record<string, string> = {
@@ -585,7 +573,11 @@ function generateFallbackIcon(name: string): BrandIcon {
 }
 
 // ===== AI CHAT RESPONSES (Via Backend) =====
-export async function getAIResponse(messages: { role: string; content: string }[]): Promise<string> {
+export async function getAIResponse(
+  messages: { role: string; content: string }[],
+  context: { brandName: string; description: string }
+): Promise<string> {
+  const { brandName, description } = context;
   try {
     let history = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -597,24 +589,27 @@ export async function getAIResponse(messages: { role: string; content: string }[
       history.shift();
     }
 
-    const systemInstruction = `Eres "Kwiq Branding", un estratega de marca de élite con años de experiencia en marketing y diseño.
-Guía al usuario en una conversación estratégica de descubrimiento para definir su identidad de marca.
+    const systemInstruction = `Eres "Kwiq Branding", un estratega de marca de élite.
+Guía al usuario en una conversación estratégica de descubrimiento.
+
+INFORMACIÓN YA CONOCIDA (NO PREGUNTAR ESTO):
+- Nombre del negocio: "${brandName}"
+- Descripción inicial: "${description}"
 
 PRINCIPIOS DE OPERACIÓN:
-1. **UNA PREGUNTA A LA VEZ**: NUNCA realices más de una pregunta por mensaje.
-2. **BREVEDAD E IMPACTO**: Máximo 25 palabras. Sé directo, profesional, empático y autoritario.
-3. **SIN CUESTIONARIOS**: No uses listas, viñetas ni bloques de preguntas. La conversación debe ser natural y fluida.
-4. **DESCUBRIMIENTO ESTRATÉGICO**: Indaga sobre:
-   - Propósito y qué hace el negocio (Empieza por aquí).
-   - Servicios o productos específicos (OBLIGATORIO para el diseño de iconos).
-   - Público objetivo y diferenciación estratégica.
-   - Personalidad, tono y dirección visual deseada.
-5. **PRECISIÓN**: Si una respuesta es vaga, haz una pregunta de seguimiento para profundizar.
+1. **NO REPETIR**: No pidas el nombre del negocio ni la descripción básica si ya están arriba. 
+2. **UNA PREGUNTA A LA VEZ**: NUNCA realices más de una pregunta por mensaje.
+3. **BREVEDAD E IMPACTO**: Máximo 25 palabras. Sé directo y profesional.
+4. **DESCUBRIMIENTO ESTRATÉGICO**: Si ya conoces el nombre y el propósito, profundiza en:
+   - Servicios detallados (necesarios para iconos).
+   - Público objetivo.
+   - Competencia y diferenciación.
+   - Tonos y estética visual.
 
 FLUJO:
-- Comienza siempre descubriendo el nombre del negocio y sus servicios/productos principales.
-- Continúa con empatía y curiosidad profesional hasta que tengas una visión completa del ADN de la marca.
-- No te limites a un número fijo de preguntas; pregunta lo necesario para ser un consultor de clase mundial.
+- Saluda reconociendo la información que ya tienes.
+- Si la descripción inicial es completa, pasa directamente a temas más profundos.
+- No te limites a un número fijo de preguntas.
 
 FASE DE RESUMEN (ANTES DEL CIERRE):
 Cuando decidas que tienes suficiente información, NO finalices inmediatamente. Primero, presenta un resumen estratégico breve del ADN de marca que has capturado.
@@ -634,6 +629,7 @@ Inmediatamente después del resumen anterior, finaliza EXACTAMENTE con este text
 "Perfecto. Ahora tengo una comprensión clara de tu marca.
 
 Haz clic en **'✨ Generar Branding'** para ver cinco propuestas estratégicas diseñadas especialmente para tu negocio."`;
+
 
     const { result } = await callBackend({
       type: "chat",
