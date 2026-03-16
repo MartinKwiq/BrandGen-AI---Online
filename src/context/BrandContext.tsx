@@ -119,8 +119,10 @@ export function BrandProvider({ children }: { children: ReactNode }) {
 
     setIsLoading(true);
     try {
-      // Generate context summary from conversation for smart responses
-      const chatMessages = updatedProject.messages.map(m => ({ role: m.role, content: m.content }));
+      // Enviar solo los últimos 6 mensajes para ahorrar tokens
+      const chatMessages = updatedProject.messages
+        .slice(-6)
+        .map(m => ({ role: m.role, content: m.content }));
 
       // Limit to 10 interactions
       const userMessagesCount = updatedProject.messages.filter(m => m.role === 'user').length;
