@@ -108,35 +108,39 @@ export async function saveProject(project) {
  */
 export async function saveBrandingProject(project) {
     if (!supabase) {
-        console.warn("⚠️ Supabase no está configurado. No se puede guardar el proyecto.");
-        return;
+        throw new Error("Supabase no está configurado.");
     }
 
     try {
-        const timestamp = new Date().toISOString();
+        const timestamp = project.updated_at || project.updatedAt || new Date().toISOString();
         console.log(`💾 Persisting project ${project.id} to Supabase...`);
         
+        // Sanity check for data structure - ensuring branding is the root object if passed entire project
+        const brandingData = project.branding || project;
+
         const { data, error } = await supabase
             .from("brandgen_projects")
             .upsert([
                 {
                     id: project.id,
-                    name: project.name || project.branding?.brandName || "Unnamed Project",
-                    description: project.description || project.branding?.tagline || "",
-                    branding: project.branding || project,
-                    status: "completed",
+                    name: project.name || brandingData.brandName || "Unnamed Project",
+                    description: project.description || brandingData.tagline || "",
+                    branding: brandingData,
+                    status: project.status || "completed",
                     updated_at: timestamp
                 }
             ], { onConflict: 'id' });
 
         if (error) {
-            console.error("❌ SUPABASE UPSERT ERROR:", error);
+            console.error("❌ SUPABASE UPSERT ERROR DETAILS:", JSON.stringify(error, null, 2));
             throw error;
         }
 
         console.log(`✅ Project ${project.id} successfully saved to Supabase.`);
+        return data;
     } catch (err) {
         console.error(`❌ SAVE BRANDING PROJECT FAILED for ${project.id}:`, err);
+        throw err; // Re-throw to trigger fallback in saveProject
     }
 }
 
@@ -168,7 +172,11 @@ export async function getProjects() {
                 projects.push(await fs.readJson(projectFile));
             }
         }
-        return projects.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        return projects.sort((a, b) => {
+            const dateA = new Date(a.updated_at || a.updatedAt || 0);
+            const dateB = new Date(b.updated_at || b.updatedAt || 0);
+            return dateB - dateA;
+        });
     } catch (e) {
         return [];
     }

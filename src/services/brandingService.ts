@@ -436,9 +436,21 @@ Responde ESTRICTAMENTE en este formato JSON:
       const cleanedDiscovery = extractJSON(typeof rawDiscovery === 'string' ? rawDiscovery : JSON.stringify(rawDiscovery));
       const discoveryData = cleanedDiscovery ? JSON.parse(cleanedDiscovery) : { services: [] };
       iconDefinitions = (discoveryData.services || []).slice(0, 6);
+      
+      // FORZAR FALLBACK SI EL ARRAY ESTÁ VACÍO
+      if (iconDefinitions.length === 0) {
+        console.warn("⚠️ Descubrimiento devolvió 0 servicios, usando genéricos.");
+        iconDefinitions = Array.from({ length: 6 }, (_, i) => ({ 
+          name: `Servicio ${i + 1}`, 
+          description: 'Icono profesional de negocio' 
+        }));
+      }
     } catch (e) {
       console.warn("⚠️ Error en descubrimiento de iconos, usando genéricos.");
-      iconDefinitions = Array.from({ length: 6 }, (_, i) => ({ name: `Servicio ${i + 1}`, description: 'Icono profesional' }));
+      iconDefinitions = Array.from({ length: 6 }, (_, i) => ({ 
+        name: `Servicio ${i + 1}`, 
+        description: 'Icono profesional' 
+      }));
     }
 
     // ===== PHASE 1.5: SHARED ICON GENERATION =====

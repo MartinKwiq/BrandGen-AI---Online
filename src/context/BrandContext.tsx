@@ -68,6 +68,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         name,
         description,
         createdAt: new Date(),
+        updatedAt: new Date(),
         updated_at: new Date(),
         status: 'draft',
         messages: [
@@ -112,6 +113,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       ...currentProject,
       messages: [...currentProject.messages, userMessage],
       updatedAt: new Date(),
+      updated_at: new Date(),
     };
 
     setCurrentProject(updatedProject);
@@ -243,6 +245,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
             timestamp: new Date(),
           },
         ],
+        updatedAt: new Date(),
         updated_at: new Date(),
       };
 
@@ -293,13 +296,14 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateProject = useCallback((project: BrandProject) => {
-    setCurrentProject(project);
-    setProjects(prev => prev.map(p => p.id === project.id ? project : p));
+    const updatedWithTimestamp = { ...project, updatedAt: new Date(), updated_at: new Date() };
+    setCurrentProject(updatedWithTimestamp);
+    setProjects(prev => prev.map(p => p.id === project.id ? updatedWithTimestamp : p));
     
     // Debounce network save to prevent UI freeze during rapid Mixer clicks
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => {
-      saveProject(project).catch(error => console.error("Error background saving project:", error));
+      saveProject(updatedWithTimestamp).catch(error => console.error("Error background saving project:", error));
     }, 1000);
   }, []);
 
