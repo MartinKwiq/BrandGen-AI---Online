@@ -41,6 +41,15 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       try {
         const loadedProjects = await getProjects();
         setProjects(loadedProjects);
+        
+        // Recover active project from ID (lightweight)
+        const lastActiveId = localStorage.getItem('active_project_id');
+        if (lastActiveId) {
+          const active = loadedProjects.find(p => p.id === lastActiveId);
+          if (active) setCurrentProject(active);
+        } else if (loadedProjects.length > 0 && !currentProject) {
+          setCurrentProject(loadedProjects[0]);
+        }
       } catch (error) {
         console.error('❌ Error loading projects:', error);
       }
@@ -84,6 +93,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       await saveProject(newProject);
       setProjects(prev => [newProject, ...prev]);
       setCurrentProject(newProject);
+      localStorage.setItem('active_project_id', newProject.id);
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +106,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       conversationPhase.current = 'values';
       askedTopics.current = new Set();
       setCurrentProject(project);
+      localStorage.setItem('active_project_id', project.id);
     }
   }, [projects]);
 
@@ -293,6 +304,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     conversationPhase.current = 'values';
     askedTopics.current = new Set();
     setCurrentProject(null);
+    localStorage.removeItem('active_project_id');
   }, []);
 
   const updateProject = useCallback((project: BrandProject) => {

@@ -405,8 +405,12 @@ app.post("/api/projects", async (req, res) => {
         
         res.json(savedProject);
     } catch (error) {
-        console.error("Error al guardar proyecto:", error);
-        res.status(500).json({ error: "Error al guardar el proyecto" });
+        console.error("❌ CRITICAL ERROR SAVING PROJECT:", error);
+        res.status(500).json({ 
+            error: "Error al guardar el proyecto", 
+            details: error.message,
+            code: error.code || 'UNKNOWN_ERROR'
+        });
     }
 });
 

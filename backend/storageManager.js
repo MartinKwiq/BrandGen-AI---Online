@@ -115,8 +115,16 @@ export async function saveBrandingProject(project) {
         const timestamp = project.updated_at || project.updatedAt || new Date().toISOString();
         console.log(`💾 Persisting project ${project.id} to Supabase...`);
         
-        // Sanity check for data structure - ensuring branding is the root object if passed entire project
-        const brandingData = project.branding || project;
+        // Saneado de datos: asegurar que branding sea un objeto JSON válido
+        // Si viene como string (raro pero posible), parsear.
+        let brandingData = project.branding || project;
+        if (typeof brandingData === 'string') {
+            try {
+                brandingData = JSON.parse(brandingData);
+            } catch (e) {
+                console.warn("⚠️ brandingData era string pero no JSON válido, usando objeto original");
+            }
+        }
 
         const { data, error } = await supabase
             .from("brandgen_projects")
@@ -140,7 +148,7 @@ export async function saveBrandingProject(project) {
         return data;
     } catch (err) {
         console.error(`❌ SAVE BRANDING PROJECT FAILED for ${project.id}:`, err);
-        throw err; // Re-throw to trigger fallback in saveProject
+        throw err; // Re-lanzar para que el endpoint devuelva 500 con detalle
     }
 }
 

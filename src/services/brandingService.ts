@@ -94,8 +94,23 @@ function extractJSON(rawText: string | null | undefined): string | null {
       JSON.parse(jsonCandidate);
       return jsonCandidate;
     } catch (parseErr) {
-      console.warn("extractJSON parse fail, attempting aggressive cleanup...");
-      // Extreme cleanup: remove anything before first { and after last }
+      console.warn("extractJSON parse fail, attempting recursive recovery...");
+      
+      // If the AI response was truncated, try to close the last open object/array
+      // Or find the last valid closure
+      let lastPossibleBrace = jsonCandidate.lastIndexOf("}");
+      while (lastPossibleBrace > 0) {
+        const truncatedCandidate = jsonCandidate.substring(0, lastPossibleBrace + 1);
+        try {
+          JSON.parse(truncatedCandidate);
+          console.log("✅ Recovered partial JSON by truncation.");
+          return truncatedCandidate;
+        } catch (e) {
+          lastPossibleBrace = jsonCandidate.lastIndexOf("}", lastPossibleBrace - 1);
+        }
+      }
+
+      // Extreme cleanup fallback
       const cleanRegex = /\{[\s\S]*\}/;
       const matches = rawText.match(cleanRegex);
       if (matches) return matches[0];
@@ -832,17 +847,12 @@ export async function saveProject(project: BrandProject): Promise<void> {
 
     if (!response.ok) throw new Error('Error saving project to backend');
 
-    // Al guardar, el backend devuelve el proyecto con las URLs de las imágenes actualizadas
     const savedProject = await response.json();
     console.log('✅ Project saved to backend:', savedProject.id);
   } catch (error) {
     console.error('❌ Error saving project:', error);
-    // Fallback social to localStorage if backend fails
-    const projects = await getProjects();
-    const existingIndex = projects.findIndex(p => p.id === project.id);
-    if (existingIndex >= 0) projects[existingIndex] = project;
-    else projects.push(project);
-    localStorage.setItem('brandgen_projects', JSON.stringify(projects));
+    // REMOVED: localStorage fallback to avoid QuotaExceededError
+    throw error;
   }
 }
 
@@ -853,8 +863,7 @@ export async function getProjects(): Promise<BrandProject[]> {
     return await response.json();
   } catch (error) {
     console.error('❌ Error fetching projects:', error);
-    const stored = localStorage.getItem('brandgen_projects');
-    return stored ? JSON.parse(stored) : [];
+    return []; // No longer using localStorage fallback
   }
 }
 
@@ -867,8 +876,7 @@ export async function deleteProject(id: string): Promise<void> {
     console.log('✅ Project deleted from backend:', id);
   } catch (error) {
     console.error('❌ Error deleting project:', error);
-    const projects = (await getProjects()).filter(p => p.id !== id);
-    localStorage.setItem('brandgen_projects', JSON.stringify(projects));
+    throw error;
   }
 }
 
