@@ -9,8 +9,10 @@ export interface BrandProject {
   id: string;
   name: string;
   description: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  created_at?: string | Date; // Standard for Supabase/Backend
+  updated_at?: string | Date; // Standard for Supabase/Backend
   status: 'draft' | 'generating' | 'completed' | 'exported';
   messages: Message[];
   branding?: BrandBranding;

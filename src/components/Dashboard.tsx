@@ -206,7 +206,7 @@ function ProjectCard({ project, isSelected, onSelect, onDelete, view }: ProjectC
             {statusLabels[project.status]}
           </span>
           <span className="text-xs text-slate-400">
-            {new Date(project.updatedAt).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
+            {new Date(project.updated_at || project.updatedAt || Date.now()).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' })}
           </span>
         </div>
 
