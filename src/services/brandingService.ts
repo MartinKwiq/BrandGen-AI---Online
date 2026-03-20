@@ -271,7 +271,7 @@ TERRITORIOS OBLIGATORIOS (Diferenciación Extrema):
 5. **Futuristic Digital**: Experimental, gradientes extremos (en descripción), tipografía digital, estética Cyber/Next-Gen.
 
 REQUERIMIENTOS POR PROPUESTA:
-1. **Name**: Título sugerente. 2. **Mood**: Nombre del territorio. 3. **Description**: Porqué encaja con el DNA. 4. **Colors**: 6 Hex con roles. 5. **Typography**: Pareja única (titulo/cuerpo). 6. **LogoDescription**: Concepto visual distinto. 7. **IconStyle**: Estilo único.
+1. **Name**: Título sugerente. 2. **Mood**: Nombre del territorio. 3. **Description**: Porqué encaja con el DNA. 4. **Colors**: 6 Hex con roles. 5. **Typography**: Pareja única (titulo/cuerpo). 6. **LogoDescription**: Concepto visual distinto. 7. **IconStyle**: Estilo único. 8. **Slogan**: Eslogan de la propuesta (máximo 5 palabras).
  
 Responde ESTRICTAMENTE en este formato JSON:
 {
@@ -280,7 +280,7 @@ Responde ESTRICTAMENTE en este formato JSON:
   },
   "proposals": [
     {
-      "name": "", "mood": "Minimal Tech", "description": "",
+      "name": "", "mood": "Minimal Tech", "description": "", "slogan": "",
       "colors": [ {"name": "", "hex": "", "usage": ""} ],
       "typography": { "titulo": "Font Name", "cuerpo": "Font Name" },
       "logoDescription": "", "iconStyle": ""
@@ -443,8 +443,9 @@ Responde ESTRICTAMENTE en este formato JSON:
     try {
       const serviceDiscoveryPrompt = `
         Identifica exactamente 6 servicios o categorías clave de este negocio: "${brandName}". 
-        Descripción: "${description}". ${chatContext ? `Contexto extra: ${chatContext}` : ''}
-        Responde ESTRICTAMENTE en JSON: {"services": [{"name": "Nombre", "description": "Concepto visual"}]}
+        Descripción: "${description}". ${chatContext ? `Contexto extra de entrevista: ${chatContext}` : ''}
+        DNA Sugerido: ${brandDNA.personality.join(', ')}.
+        Responde ESTRICTAMENTE en JSON: {"services": [{"name": "Nombre", "description": "Concepto visual que encaje con el estilo de la marca"}]}
       `;
       const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
       const rawDiscovery = discoveryRes.result || discoveryRes;
@@ -546,6 +547,7 @@ Responde ESTRICTAMENTE en este formato JSON:
         id: i + 1,
         name: safeStr(direction.name, `Propuesta ${i + 1}`),
         description: safeStr(direction.description, "Diseño de identidad visual"),
+        slogan: safeStr(direction.slogan, ""),
         mood: safeStr(direction.mood, "moderno"),
         logo: logoImageUrl,
         colorScheme: normalizedColors.map(c => c.hex),
@@ -567,7 +569,7 @@ Responde ESTRICTAMENTE en este formato JSON:
 
     const brandingResult: BrandBranding = {
       brandName,
-      tagline: generateTagline(brandName, description),
+      tagline: proposals[0]?.slogan || generateTagline(brandName, description),
       logo: mainProposal.logo,
       colors: mainProposal.colors,
       typography: mainProposal.typography,
@@ -577,6 +579,7 @@ Responde ESTRICTAMENTE en este formato JSON:
         id: p.id,
         name: p.name,
         description: p.description,
+        slogan: p.slogan,
         colorScheme: p.colorScheme,
         typography: { titulo: p.typography.heading.name, cuerpo: p.typography.body.name },
         mood: p.mood,
@@ -647,15 +650,16 @@ PRINCIPIOS DE OPERACIÓN:
 1. **NO REPETIR**: No pidas el nombre del negocio ni la descripción básica si ya están arriba. 
 2. **UNA PREGUNTA A LA VEZ**: NUNCA realices más de una pregunta por mensaje.
 3. **BREVEDAD E IMPACTO**: Máximo 25 palabras. Sé directo y profesional.
-4. **DESCUBRIMIENTO ESTRATÉGICO**: Si ya conoces el nombre y el propósito, profundiza en:
-   - Servicios detallados (necesarios para iconos).
-   - Público objetivo.
-   - Competencia y diferenciación.
-   - Tonos y estética visual.
+4. **DESCUBRIMIENTO ESTRATÉGICO Y VISUAL**: Profundiza en:
+   - Servicios detallados (necesarios para iconos relevantes).
+   - Público objetivo y competencia.
+   - **Preferencias Visuales**: Pregunta si ya tienen colores o tipos de letra específicos, o si están abiertos a que exploremos nuevas opciones.
+   - **Eslogan**: Pregunta si ya tienen un eslogan o si desean que nosotros (IA) propongamos opciones nuevas.
 
 FLUJO:
-- Saluda reconociendo la información que ya tienes.
-- Si la descripción inicial es completa, pasa directamente a temas más profundos.
+- Saluda reconociendo la información inicial.
+- El objetivo es obtener suficiente información sobre el negocio Y sus preferencias visuales antes de cerrar.
+- No cierres la entrevista hasta haber explorado tanto el propósito del negocio como sus gustos estéticos mínimos (colores/estilo).
 - No te limites a un número fijo de preguntas.
 
 FASE DE RESUMEN (ANTES DEL CIERRE):

@@ -93,13 +93,14 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
       colors,
       typography,
       icons,
+      tagline: selectedProposal?.slogan || branding.tagline,
       strategy: branding.strategy,
       currentProposal: selectedProposal
     };
   };
 
   const finalSystem = getFinalBrandSystem();
-  const { colors: currentColors, typography: currentTypo, logo: currentLogo, icons: currentIcons, currentProposal } = finalSystem;
+  const { colors: currentColors, typography: currentTypo, logo: currentLogo, icons: currentIcons, currentProposal, tagline: currentTagline } = finalSystem;
 
   useEffect(() => {
     // Scroll to top when branding changes
@@ -119,7 +120,7 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                   <div>
                     <span className="text-cyan-600 font-bold tracking-widest text-sm uppercase mb-2 block">Brand Identity</span>
                     <h1 className="text-5xl font-black text-slate-900 tracking-tight">{branding.brandName}</h1>
-                    <p className="text-xl text-slate-500 mt-2 font-medium italic">"{branding.tagline}"</p>
+                    <p className="text-xl text-slate-500 mt-2 font-medium italic">"{currentTagline}"</p>
                   </div>
                   {branding.strategy && (
                     <div className="flex flex-wrap gap-2">

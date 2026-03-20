@@ -83,6 +83,7 @@ export interface BrandProposal {
   applications: string[];
   logo?: string;
   icons?: BrandIcon[];
+  slogan?: string;
 }
 
 export interface WebhookConfig {
