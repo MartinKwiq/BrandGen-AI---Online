@@ -399,9 +399,15 @@ app.post("/api/projects", async (req, res) => {
         // Primero guardamos en disco (e imágenes)
         const savedProject = await storage.saveProject(project);
         
-        // Luego forzamos guardado en Supabase explícitamente si es necesario
-        // aunque saveProject ya lo llama, nos aseguramos de que se complete
-        await storage.saveBrandingProject(savedProject);
+        // Luego intentamos guardar en Supabase si está disponible
+        try {
+            if (savedProject) {
+                await storage.saveBrandingProject(savedProject);
+            }
+        } catch (error) {
+            console.warn("⚠️ ADVERTENCIA: No se pudo sincronizar con Supabase, pero el proyecto se guardó localmente:", error.message);
+            // No lanzamos el error para que el frontend pueda continuar con la copia local
+        }
         
         res.json(savedProject);
     } catch (error) {

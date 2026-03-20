@@ -141,6 +141,11 @@ export async function saveBrandingProject(project) {
 
         if (error) {
             console.error("❌ SUPABASE UPSERT ERROR DETAILS:", JSON.stringify(error, null, 2));
+            console.error("Object attempted to save:", JSON.stringify({
+                id: project.id,
+                name: project.name || brandingData.brandName || "Unnamed Project",
+                status: project.status || "completed"
+            }, null, 2));
             throw error;
         }
 
