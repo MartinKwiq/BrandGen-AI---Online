@@ -42,20 +42,49 @@ export async function saveProject(project) {
     const projectDir = path.join(STORAGE_DIR, projectId);
     await fs.ensureDir(projectDir);
 
-    // 1. Guardar imágenes localmente (se mantienen en el disco de Render mientras el serv este vivo)
+    // 1. Guardar imágenes localmente y en Supabase (Storage)
     const saveImage = async (base64Data, prefix) => {
         if (!base64Data || !base64Data.startsWith("data:image")) return base64Data;
         try {
             const isSvg = base64Data.includes("image/svg+xml");
             const extension = isSvg ? "svg" : "png";
+            const contentType = isSvg ? "image/svg+xml" : "image/png";
             const base64Content = base64Data.split(",")[1];
             const buffer = Buffer.from(base64Content, "base64");
             const fileName = `${prefix}_${Date.now()}.${extension}`;
+            
+            // Guardado Local (Temporal en Render, permanente si se corre local)
             const filePath = path.join(projectDir, fileName);
             await fs.writeFile(filePath, buffer);
+
+            // Guardado en Supabase Storage (Permanente Online)
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase.storage
+                        .from('brandgen-storage')
+                        .upload(`${projectId}/${fileName}`, buffer, {
+                            contentType: contentType,
+                            upsert: true
+                        });
+
+                    if (error) {
+                        console.error(`❌ Error subiendo a Supabase Storage (${fileName}):`, error.message);
+                    } else {
+                        const { data: publicUrlData } = supabase.storage
+                            .from('brandgen-storage')
+                            .getPublicUrl(`${projectId}/${fileName}`);
+                        
+                        console.log(`🚀 Imagen subida a Supabase Storage: ${fileName}`);
+                        return publicUrlData.publicUrl;
+                    }
+                } catch (err) {
+                    console.error(`❌ Fallo crítico en Supabase Storage (${fileName}):`, err.message);
+                }
+            }
+
             return `/api/projects/${projectId}/images/${fileName}`;
         } catch (e) {
-            console.error(`❌ Error guardando imagen ${prefix}:`, e);
+            console.error(`❌ Error procesando imagen ${prefix}:`, e);
             return base64Data;
         }
     };
@@ -133,8 +162,16 @@ export async function saveBrandingProject(project) {
                     id: project.id,
                     name: project.name || brandingData.brandName || "Unnamed Project",
                     description: project.description || brandingData.tagline || "",
-                    branding: brandingData,
+                    industry: project.industry || brandingData.industry || "",
+                    target_audience: project.target_audience || brandingData.targetAudience || "",
                     status: project.status || "completed",
+                    proposals: project.proposals || brandingData.proposals || [],
+                    images: { 
+                        logo: brandingData.logo || null, 
+                        icons: brandingData.icons || [] 
+                    },
+                    colors: project.colors || brandingData.colors || [],
+                    typography: project.typography || brandingData.typography || {},
                     updated_at: timestamp
                 }
             ], { onConflict: 'id' });
