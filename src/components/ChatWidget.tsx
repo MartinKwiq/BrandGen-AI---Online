@@ -48,6 +48,11 @@ export function ChatWidget({
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
+        if (event.error === 'network') {
+          alert('Error de red en el micrófono. Tu navegador podría estar bloqueando el servicio de reconocimiento de voz de Google, no hay conexión a internet, o usas un entorno restringido. Por favor, usa el teclado mientras tanto.');
+        } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          alert('Permiso de micrófono denegado. Por favor, verifica la configuración de tu navegador.');
+        }
       };
 
       recognitionRef.current.onend = () => {
