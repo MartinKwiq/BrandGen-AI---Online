@@ -88,12 +88,21 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
       if (p?.icons) icons = p.icons;
     }
 
+    // 6. Resolve Tagline
+    let tagline = branding.tagline;
+    if (components?.taglineProposalId) {
+      const p = branding.proposals.find(prop => prop.id === components.taglineProposalId);
+      if (p?.slogan) tagline = p.slogan;
+    } else if (selectedProposal?.slogan) {
+      tagline = selectedProposal.slogan;
+    }
+
     return {
       logo,
       colors,
       typography,
       icons,
-      tagline: selectedProposal?.slogan || branding.tagline,
+      tagline,
       strategy: branding.strategy,
       currentProposal: selectedProposal
     };
@@ -930,6 +939,48 @@ export function BrandGuide({ branding, projectId }: BrandGuideProps) {
                           <p className="text-xs font-semibold uppercase text-slate-400">Propuesta {p.id}</p>
                         </div>
                         {(branding.selectedComponents?.iconsProposalId === p.id || (!branding.selectedComponents?.iconsProposalId && p.id === 1)) && (
+                          <span className="text-cyan-600">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 5. Tagline Selection */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <span>✨</span> Eslóganes
+                  </h3>
+                  <div className="space-y-2">
+                    {branding.proposals.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          const newBranding = {
+                            ...branding,
+                            selectedComponents: {
+                              ...branding.selectedComponents,
+                              taglineProposalId: p.id
+                            }
+                          };
+                          if (currentProject) {
+                            updateProject({ ...currentProject, branding: newBranding });
+                          }
+                        }}
+                        className={cn(
+                          "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center justify-between",
+                          (branding.selectedComponents?.taglineProposalId === p.id || (!branding.selectedComponents?.taglineProposalId && p.id === 1))
+                            ? "border-cyan-500 bg-cyan-50"
+                            : "border-slate-100 hover:border-slate-300"
+                        )}
+                      >
+                        <div>
+                          <p className="text-xs font-semibold uppercase text-slate-400">Propuesta {p.id}</p>
+                          <p className="text-[10px] font-medium mt-1 italic line-clamp-2" style={{ fontFamily: currentTypo.heading.fontFamily }}>
+                            {p.slogan || "Sin eslogan"}
+                          </p>
+                        </div>
+                        {(branding.selectedComponents?.taglineProposalId === p.id || (!branding.selectedComponents?.taglineProposalId && p.id === 1)) && (
                           <span className="text-cyan-600">✓</span>
                         )}
                       </button>

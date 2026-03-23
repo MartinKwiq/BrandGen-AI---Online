@@ -442,10 +442,29 @@ Responde ESTRICTAMENTE en este formato JSON:
     let iconDefinitions: any[] = [];
     try {
       const serviceDiscoveryPrompt = `
-        Identifica exactamente 6 servicios o categorías clave de este negocio: "${brandName}". 
-        Descripción: "${description}". ${chatContext ? `Contexto extra de entrevista: ${chatContext}` : ''}
-        DNA Sugerido: ${brandDNA.personality.join(', ')}.
-        Responde ESTRICTAMENTE en JSON: {"services": [{"name": "Nombre", "description": "Concepto visual que encaje con el estilo de la marca"}]}
+        Actúa como un Analista de Estrategia de Marca. Tu objetivo es identificar los 6 pilares de servicio o categorías clave que definen a este negocio para crear una iconografía personalizada y profesional.
+
+        NEGOCIO: "${brandName}"
+        DESCRIPCIÓN: "${description}"
+        ${chatContext ? `CONTEXTO DE LA ENTREVISTA: ${chatContext}` : ''}
+        PERSONALIDAD DE MARCA: ${brandDNA.personality.join(', ')}
+
+        INSTRUCCIONES:
+        1. Identifica 6 servicios o conceptos clave que sean fundamentales para la operación de este negocio.
+        2. Para cada servicio, crea un "visual_concept" muy específico. Evita lo genérico. 
+           Ejemplo para "IA": En lugar de "un cerebro", usa "Cerebro digital con conexiones de circuitos neuronales, minimalista y simétrico".
+           Ejemplo para "Código": En lugar de "etiquetas", usa "Símbolo de código </> integrado en una forma geométrica moderna".
+        3. Asegura que los conceptos funcionen bien como iconos vectoriales (claros, sin detalles excesivos, siluetas fuertes).
+
+        Responde ESTRICTAMENTE en JSON: 
+        {
+          "services": [
+            {
+              "name": "Nombre del Servicio", 
+              "description": "Concepto visual detallado y profesional para el icono"
+            }
+          ]
+        }
       `;
       const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
       const rawDiscovery = discoveryRes.result || discoveryRes;
@@ -476,8 +495,12 @@ Responde ESTRICTAMENTE en este formato JSON:
     console.log('🎨 Generating shared icon set (6 calls)...');
 
     const sharedIconPrompts = iconDefinitions.map(def => `
-      Minimalist flat vector icon for "${def.name}". Concept: ${def.description}. 
-      Style: Clean line art, Lucide style, monochrome black on white background. No text.
+      Premium professional brand icon for "${def.name}". 
+      Visual metaphor: ${def.description}.
+      Style: High-end minimalist flat vector, uniform line weight, professional business iconography. 
+      Aesthetic: Clean, modern, sophisticated. No text, no labels, no realistic details. 
+      Background: Isolated on pure white background.
+      The icon must feel premium and state-of-the-art.
     `);
 
     const sharedIconImages = await generateImageQueue(sharedIconPrompts, (current, total) => {
@@ -526,15 +549,24 @@ Responde ESTRICTAMENTE en este formato JSON:
       };
 
       // Generación de Logotipo mejorada para identidad específica
-      const logoPrompt = `A professional, high-end vector logo design for the company called "${brandName}".
-        CRITICAL REQUIREMENT: The exact text "${brandName}" MUST be included prominently and legibly as part of the logo (e.g., as a logotype or under the brand symbol).
-        DO NOT include color hex codes, palette names, or any other text in the image besides the company name.
-        Visual Concept: ${direction.logoDescription || direction.mood}. 
-        Aesthetic: ${brandDNA.visualGuidelines}. 
-        Personality: ${brandDNA.personality.join(', ')}. 
-        Requirements: Minimalist vector logo, high fidelity, white background, centered, readable typography integration. 
-        Palette used for the graphic elements: ${normalizedColors.map(c => c.hex).join(', ')}. 
-        Avoid generic placeholders; the text "${brandName}" is mandatory.`;
+      const logoPrompt = `
+        Exclusive high-end professional corporate logo for the company: "${brandName}".
+        
+        CRITICAL: The text "${brandName}" MUST be the central element of the design, perfectly legible and integrated with premium typography.
+        
+        CONCEPT: ${direction.logoDescription || direction.mood}.
+        DNA: ${brandDNA.personality.join(', ')}.
+        VISUAL STYLE: ${brandDNA.visualGuidelines || 'Modern, clean, and professional'}.
+        COLOR PALETTE: ${normalizedColors.map(c => c.hex).join(', ')}.
+        
+        TECHNICAL REQUIREMENTS:
+        - Style: High-fidelity flat vector design.
+        - Composition: Balanced, centered, with generous breathing room.
+        - Background: Pure white (#FFFFFF).
+        - Quality: World-class agency standard.
+        - ABSOLUTE PROHIBITION: DO NOT include any hex color codes (e.g., #FF0000), color palette names, RGB values, or technical metadata in the image.
+        - ONLY text allowed: The company name "${brandName}".
+      `;
       
       onStep?.(`Generando logotipo para ${direction.name || `Propuesta ${i+1}`}...`);
       const logoResults = await generateImageQueue([logoPrompt]);

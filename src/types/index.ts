@@ -43,6 +43,7 @@ export interface BrandBranding {
     moodProposalId?: number;
     logoProposalId?: number;
     iconsProposalId?: number;
+    taglineProposalId?: number;
   };
 }
 
