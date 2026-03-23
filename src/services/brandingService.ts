@@ -181,10 +181,31 @@ async function generateImageQueue(
         
         console.log(`📸 Generating image ${i + 1}/${total} (Attempt ${attempts}):`, prompt.substring(0, 50) + "...");
         
+        // LOG PROMPT: Image
+        await fetch(`${BASE_URL}/debug/log`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            stepName: `Image Generation Prompt (${i + 1}/${total})`, 
+            prompt: prompt,
+            metadata: { attempt: attempts }
+          })
+        }).catch(() => {});
+
         // USO DEL SISTEMA DE FALLBACK
         const logoUrl = await generateImageWithFallback(prompt);
         
         if (logoUrl) {
+          // LOG RESPONSE: Image Success
+          await fetch(`${BASE_URL}/debug/log`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              stepName: `Image Generation Success (${i + 1}/${total})`, 
+              response: logoUrl 
+            })
+          }).catch(() => {});
+
           results.push(logoUrl);
           success = true;
           // Guard delay after success
@@ -195,6 +216,17 @@ async function generateImageQueue(
       } catch (error: any) {
         console.error(`❌ Image generation failed (${i + 1}/${total}):`, error);
         
+        // LOG ERROR: Image Failure
+        await fetch(`${BASE_URL}/debug/log`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            stepName: `Image Generation Failure (${i + 1}/${total})`, 
+            response: error.message,
+            metadata: { attempt: attempts }
+          })
+        }).catch(() => {});
+
         if (attempts < maxAttempts) {
           console.log("⏳ Rate limit or error hit. Waiting 10s before retry...");
           await new Promise(resolve => setTimeout(resolve, 10000));
@@ -442,46 +474,65 @@ Responde ESTRICTAMENTE en este formato JSON:
     let iconDefinitions: any[] = [];
     try {
       const serviceDiscoveryPrompt = `
-        Actúa como un Analista de Estrategia de Marca. Tu objetivo es identificar los 6 pilares de servicio o categorías clave que definen a este negocio para crear una iconografía personalizada y profesional.
+        Actúa como un Analista de Estrategia de Marca Senior. Tu objetivo es identificar los 6 pilares de servicio o categorías clave que definen a este negocio para crear una iconografía personalizada, profesional y técnica.
 
         NEGOCIO: "${brandName}"
         DESCRIPCIÓN: "${description}"
         ${chatContext ? `CONTEXTO DE LA ENTREVISTA: ${chatContext}` : ''}
         PERSONALIDAD DE MARCA: ${brandDNA.personality.join(', ')}
 
+        REGLAS DE ORO PARA EL DISEÑO VISUAL:
+        - EVITA LO GENÉRICO: Nada de "cerebros" para IA, "etiquetas" para código, o "gráficos" para análisis.
+        - USA METÁFORAS EXPERTAS: 
+          * IA: Estructuras fractales, flujos de datos neuronales, geometrías entrelazadas que sugieren inteligencia autónoma.
+          * CÓDIGO: Arquitectura de datos, nodos conectados, abstracciones de lógica binaria o estructuras de bloques modulares.
+          * DISEÑO/CREATIVIDAD: Formas orgánicas fusionadas con precisión geométrica, herramientas de autoría digitales ultra-modernas.
+          * SEGURIDAD: Escudos cinéticos, encriptación visual mediante patrones complejos.
+        - ATRIBUTOS: Minimalismo, simetría, grosores de línea consistentes, estilo "boutique agency".
+
         INSTRUCCIONES:
-        1. Identifica 6 servicios o conceptos clave que sean fundamentales para la operación de este negocio.
-        2. Para cada servicio, crea un "visual_concept" muy específico. Evita lo genérico. 
-           Ejemplo para "IA": En lugar de "un cerebro", usa "Cerebro digital con conexiones de circuitos neuronales, minimalista y simétrico".
-           Ejemplo para "Código": En lugar de "etiquetas", usa "Símbolo de código </> integrado en una forma geométrica moderna".
-        3. Asegura que los conceptos funcionen bien como iconos vectoriales (claros, sin detalles excesivos, siluetas fuertes).
+        1. Identifica los 6 servicios más críticos basándote en la descripción y la entrevista.
+        2. Para cada servicio, crea un "visual_concept" altamente detallado para un diseñador de iconos premium.
 
         Responde ESTRICTAMENTE en JSON: 
         {
           "services": [
             {
-              "name": "Nombre del Servicio", 
-              "description": "Concepto visual detallado y profesional para el icono"
+              "name": "Nombre exacto del servicio", 
+              "description": "Concepto visual descriptivo y experto (metáfora avanzada)"
             }
           ]
         }
       `;
+
+      // LOG PROMPT: Discovery
+      await fetch(`${BASE_URL}/debug/log`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stepName: "Icon Discovery Prompt", prompt: serviceDiscoveryPrompt })
+      }).catch(() => {});
+
       const discoveryRes = await callBackend({ type: "chat", prompt: serviceDiscoveryPrompt });
       const rawDiscovery = discoveryRes.result || discoveryRes;
+      
+      // LOG RESPONSE: Discovery
+      await fetch(`${BASE_URL}/debug/log`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stepName: "Icon Discovery Response", response: rawDiscovery })
+      }).catch(() => {});
+
       const cleanedDiscovery = extractJSON(typeof rawDiscovery === 'string' ? rawDiscovery : JSON.stringify(rawDiscovery));
       const discoveryData = cleanedDiscovery ? JSON.parse(cleanedDiscovery) : { services: [] };
       iconDefinitions = (discoveryData.services || []).slice(0, 6);
       
-      // FORZAR FALLBACK SI EL ARRAY ESTÁ VACÍO
       if (iconDefinitions.length === 0) {
-        console.warn("⚠️ Descubrimiento devolvió 0 servicios, usando genéricos.");
         iconDefinitions = Array.from({ length: 6 }, (_, i) => ({ 
           name: `Servicio ${i + 1}`, 
           description: 'Icono profesional de negocio' 
         }));
       }
     } catch (e) {
-      console.warn("⚠️ Error en descubrimiento de iconos, usando genéricos.");
       iconDefinitions = Array.from({ length: 6 }, (_, i) => ({ 
         name: `Servicio ${i + 1}`, 
         description: 'Icono profesional' 

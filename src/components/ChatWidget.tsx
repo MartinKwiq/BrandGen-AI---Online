@@ -24,8 +24,51 @@ export function ChatWidget({
   aiReady = true
 }: ChatWidgetProps) {
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { t, lang: language } = useTranslation();
+
+  // Speech Recognition Setup
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = language === 'es' ? 'es-ES' : 'en-US';
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(prev => (prev ? `${prev} ${transcript}` : transcript));
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, [language]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      if (recognitionRef.current) {
+        setIsListening(true);
+        recognitionRef.current.start();
+      } else {
+        alert('Speech recognition is not supported in this browser.');
+      }
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -151,6 +194,38 @@ export function ChatWidget({
               disabled={disabled || isLoading}
               className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all text-sm"
             />
+            
+            {/* Microphone Button */}
+            <button
+              type="button"
+              onClick={toggleListening}
+              disabled={disabled || isLoading}
+              className={cn(
+                "px-3 rounded-xl transition-all flex items-center justify-center border",
+                isListening 
+                  ? "bg-red-50 border-red-200 text-red-600 animate-pulse" 
+                  : "bg-white border-slate-200 text-slate-400 hover:text-cyan-600 hover:border-cyan-200"
+              )}
+              title="Dictar mensaje"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {isListening ? (
+                  <>
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                  </svg>
+                ) : (
+                  <>
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                    <line x1="8" y1="23" x2="16" y2="23" />
+                  </>
+                )}
+              </svg>
+            </button>
+
             <button
               type="submit"
               disabled={!input.trim() || disabled || isLoading}

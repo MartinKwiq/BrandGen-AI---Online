@@ -432,7 +432,6 @@ app.delete("/api/projects/:id", async (req, res) => {
         res.status(500).json({ error: "Error al eliminar el proyecto" });
     }
 });
-
 // Servir imágenes guardadas
 app.get("/api/projects/:id/images/:imageName", (req, res) => {
     const { id, imageName } = req.params;
@@ -441,6 +440,18 @@ app.get("/api/projects/:id/images/:imageName", (req, res) => {
         res.sendFile(physicalPath);
     } else {
         res.status(404).json({ error: "Imagen no encontrada" });
+    }
+});
+
+// Endpoint para guardar logs de depuración
+app.post("/api/debug/log", async (req, res) => {
+    try {
+        const { projectId, stepName, prompt, response, metadata } = req.body;
+        await storage.saveDebugLog(projectId, stepName, prompt, response, metadata);
+        res.json({ success: true });
+    } catch (error) {
+        console.error("❌ Error en endpoint de debug log:", error);
+        res.status(500).json({ error: "Error al guardar el log" });
     }
 });
 

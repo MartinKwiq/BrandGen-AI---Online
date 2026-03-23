@@ -26,14 +26,38 @@ if (supabaseUrl && supabaseKey && supabaseUrl.startsWith("http")) {
             }
         });
         console.log(`📡 Cliente Supabase configurado con éxito.`);
+
+        // Diagnóstico de conexión al arranque
+        (async () => {
+            try {
+                console.log("🔍 [DIAG] Testing Supabase table connection...");
+                const { data, error } = await supabase.from('brandgen_projects').select('id').limit(1);
+                if (error) {
+                    console.error("❌ [DIAG] Supabase Table Error:", error.message, error.details);
+                } else {
+                    console.log("✅ [DIAG] Supabase Table Connection OK.");
+                }
+
+                const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+                if (bucketError) {
+                    console.error("❌ [DIAG] Supabase Storage Error:", bucketError.message);
+                } else {
+                    const bucketNames = buckets.map(b => b.name);
+                    console.log(`✅ [DIAG] Supabase Storage OK. Buckets: ${bucketNames.join(', ')}`);
+                    if (!bucketNames.includes('brandgen-storage')) {
+                        console.warn("⚠️ [DIAG] Bucket 'brandgen-storage' NOT FOUND!");
+                    }
+                }
+            } catch (e) {
+                console.error("❌ [DIAG] Critical failure during Supabase check:", e.message);
+            }
+        })();
     } catch (e) {
         console.error("❌ Error inicializando cliente Supabase:", e.message);
     }
 } else {
     console.warn("⚠️ ADVERTENCIA: Credenciales de Supabase ausentes o mal formateadas.");
-    if (process.env.NODE_ENV === 'production') {
-        console.log(`DEBUG: URL_OK=${!!supabaseUrl}, KEY_OK=${!!supabaseKey}`);
-    }
+    console.log(`DEBUG: URL_OK=${!!supabaseUrl}, KEY_OK=${!!supabaseKey}`);
 }
 
 /**
@@ -75,6 +99,7 @@ export async function saveProject(project) {
 
                     if (error) {
                         console.error(`❌ Error subiendo a Supabase Storage (${fileName}):`, error.message);
+                        console.error("Storage Error Details:", JSON.stringify(error));
                     } else {
                         const { data: publicUrlData } = supabase.storage
                             .from('brandgen-storage')
@@ -177,11 +202,11 @@ export async function saveBrandingProject(project) {
 
         if (error) {
             console.error("❌ SUPABASE UPSERT ERROR DETAILS:", JSON.stringify(error, null, 2));
-            console.error("Object attempted to save:", JSON.stringify({
-                id: project.id,
-                name: project.name || brandingData.brandName || "Unnamed Project",
-                status: project.status || "completed"
-            }, null, 2));
+            console.error("Payload summary:", JSON.stringify({
+                id: projectToUpsert.id,
+                name: projectToUpsert.name,
+                updated_at: projectToUpsert.updated_at
+            }));
             throw error;
         }
 
@@ -341,6 +366,37 @@ export async function cleanupOldProjects(days = 30) {
 
 export function getImagePhysicalPath(projectId, imageName) {
     return path.join(STORAGE_DIR, projectId, imageName);
+}
+
+/**
+ * Guarda un log de depuración en Supabase.
+ */
+export async function saveDebugLog(projectId, stepName, prompt, response, metadata = {}) {
+    if (supabase) {
+        try {
+            const { error } = await supabase
+                .from('brandgen_debug_logs')
+                .insert([{
+                    project_id: projectId,
+                    step_name: stepName,
+                    prompt: typeof prompt === 'string' ? prompt : JSON.stringify(prompt),
+                    response: typeof response === 'string' ? response : JSON.stringify(response),
+                    metadata
+                }]);
+            if (error) {
+                // Si la tabla no existe aún, al menos loguear en consola
+                if (error.code === 'PGRST116' || error.message.includes('not found')) {
+                    console.warn(`⚠️ Tabla 'brandgen_debug_logs' no encontrada. Log: ${stepName}`);
+                } else {
+                    console.error("❌ Error guardando debug log en Supabase:", error.message);
+                }
+            }
+            return true;
+        } catch (e) {
+            console.error("❌ Fallo crítico guardando debug log:", e.message);
+        }
+    }
+    return false;
 }
 
 
