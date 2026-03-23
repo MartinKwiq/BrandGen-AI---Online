@@ -45,14 +45,10 @@ if (supabaseUrl && supabaseKey && supabaseUrl.startsWith("http")) {
                     const bucketNames = buckets.map(b => b.name);
                     console.log(`✅ [DIAG] Supabase Storage OK. Buckets: ${bucketNames.join(', ')}`);
                     if (!bucketNames.includes('brandgen-storage')) {
-                        console.warn("⚠️ [DIAG] Bucket 'brandgen-storage' NOT FOUND! Intentando crearlo automáticamente...");
-                        const { data: createData, error: createError } = await supabase.storage.createBucket('brandgen-storage', { public: true });
-                        if (createError) {
-                            console.error("❌ [DIAG] Error al crear bucket 'brandgen-storage':", createError.message);
-                        } else {
-                            console.log("✅ [DIAG] Bucket 'brandgen-storage' creado con éxito!");
-                        }
+                        console.warn("⚠️ [DIAG] Bucket 'brandgen-storage' NOT FOUND!");
+                        console.warn("👉 ACCIÓN REQUERIDA: Debes crear el bucket 'brandgen-storage' en el panel de Supabase y configurar sus políticas RLS (Storage -> Policies) para permitir subidas e inserciones.");
                     }
+
                 }
             } catch (e) {
                 console.error("❌ [DIAG] Critical failure during Supabase check:", e.message);
