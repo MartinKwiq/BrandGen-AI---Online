@@ -2,7 +2,7 @@ import type { BrandProject, BrandBranding, BrandProposal, BrandColor, BrandIcon,
 
 // API Configuration
 // En desarrollo: usa localhost:5000; En producción (Render): misma URL del servidor (relativa)
-const BASE_URL = import.meta.env.DEV
+const BASE_URL = (import.meta as any).env?.DEV
   ? 'http://localhost:5000/api'
   : '/api';
 const BACKEND_URL = `${BASE_URL}/generate`;
@@ -25,6 +25,10 @@ async function callBackend(data: any): Promise<any> {
   }
 
   return response.json();
+}
+
+export function generateId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
 // Initialize Gemini (Kept for UI compatibility but logic removed)
@@ -250,8 +254,24 @@ export async function generateBranding(
   targetAudience?: string,
   chatContext?: string,
   onStep?: (step: string) => void,
-  onProposalReady?: (proposal: any, index: number) => void
+  onProposalReady?: (proposal: any, index: number) => void,
+  isMock: boolean = false
 ): Promise<BrandBranding> {
+  
+  if (isMock) {
+    onStep?.('Modo Prueba Activo: Generando datos simulados...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const mock = generateFallbackBranding(brandName, description);
+    
+    // Simular progreso de propuestas
+    for (let i = 0; i < mock.proposals.length; i++) {
+        onStep?.(`Simulando Propuesta ${i+1}/5...`);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        if (onProposalReady) onProposalReady(mock.proposals[i], i);
+    }
+    
+    return mock;
+  }
 
   try {
     onStep?.('Analizando tu marca y definiendo direcciones creativas...');
@@ -967,9 +987,7 @@ export async function deleteProject(id: string): Promise<void> {
   }
 }
 
-export function generateId(): string {
-  return crypto.randomUUID();
-}
+// generateId removed to avoid duplication
 
 // ===== API KEY MANAGEMENT (UI Compatibility) =====
 export function saveApiKey(apiKey: string): void {

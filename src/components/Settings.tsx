@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { cn } from '../utils/cn';
 import { useSettings } from '../context/SettingsContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { useBrand } from '../context/BrandContext';
 
 interface SettingsProps {
   onBack?: () => void;
-  // aiStatus ya no se usa aquí pero lo mantenemos por si acaso, o lo quitamos.
 }
 
 export function Settings({ onBack }: SettingsProps) {
   const { settings, updateSettings } = useSettings();
+  const { isMockMode, setIsMockMode } = useBrand();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('general');
   const [showToast, setShowToast] = useState(false);
@@ -117,6 +118,29 @@ export function Settings({ onBack }: SettingsProps) {
                         )}
                       >
                         {t('settings', 'themeSystem')}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-900">Modo Desarrollador (Mock Data)</label>
+                        <p className="text-xs text-slate-500">Genera branding instantáneo sin consumir cuota de API (ideal para pruebas de guardado).</p>
+                      </div>
+                      <button
+                        onClick={() => setIsMockMode(!isMockMode)}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2",
+                          isMockMode ? "bg-cyan-600" : "bg-slate-200"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                            isMockMode ? "translate-x-6" : "translate-x-1"
+                          )}
+                        />
                       </button>
                     </div>
                   </div>

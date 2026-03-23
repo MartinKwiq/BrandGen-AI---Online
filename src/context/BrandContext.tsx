@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useRef, useEffect } from 'react';
-import type { BrandProject, Message } from '../types';
+import type { BrandProject, Message, BrandBranding } from '../types';
 import {
   generateBranding,
   getAIResponse,
@@ -26,6 +26,8 @@ interface BrandContextType {
   clearCurrentProject: () => void;
   updateProject: (project: BrandProject) => void;
   setGenerationStep: (step: string) => void;
+  isMockMode: boolean;
+  setIsMockMode: (value: boolean) => void;
 }
 
 const BrandContext = createContext<BrandContextType | null>(null);
@@ -33,7 +35,20 @@ const BrandContext = createContext<BrandContextType | null>(null);
 export function BrandProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<BrandProject[]>([]);
   const [currentProject, setCurrentProject] = useState<BrandProject | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState('');
+  const [aiReady] = useState(isAIInitialized());
+  const [isMockMode, setIsMockModeState] = useState(() => localStorage.getItem('is_mock_mode') === 'true');
+  
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const conversationPhase = useRef<'values' | 'audience' | 'style' | 'complete'>('values');
+  const askedTopics = useRef<Set<string>>(new Set());
+
+  const setIsMockMode = useCallback((value: boolean) => {
+    setIsMockModeState(value);
+    localStorage.setItem('is_mock_mode', value.toString());
+  }, []);
 
   // Load projects on mount
   useEffect(() => {
@@ -42,7 +57,6 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         const loadedProjects = await getProjects();
         setProjects(loadedProjects);
         
-        // Recover active project from ID (lightweight)
         const lastActiveId = localStorage.getItem('active_project_id');
         if (lastActiveId) {
           const active = loadedProjects.find(p => p.id === lastActiveId);
@@ -56,19 +70,10 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     };
     loadProjects();
   }, []);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStep, setGenerationStep] = useState('');
-  const [aiReady] = useState(isAIInitialized());
-
-  // Track conversation state to avoid repetition
-  const conversationPhase = useRef<'values' | 'audience' | 'style' | 'complete'>('values');
-  const askedTopics = useRef<Set<string>>(new Set());
 
   const createProject = useCallback(async (name: string, description: string) => {
     setIsLoading(true);
     try {
-      // Reset conversation state
       conversationPhase.current = 'values';
       askedTopics.current = new Set();
 
@@ -102,7 +107,6 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   const selectProject = useCallback((id: string) => {
     const project = projects.find(p => p.id === id);
     if (project) {
-      // Reset conversation state when selecting project
       conversationPhase.current = 'values';
       askedTopics.current = new Set();
       setCurrentProject(project);
@@ -133,12 +137,10 @@ export function BrandProvider({ children }: { children: ReactNode }) {
 
     setIsLoading(true);
     try {
-      // Enviar solo los últimos 6 mensajes para ahorrar tokens
       const chatMessages = updatedProject.messages
         .slice(-6)
         .map(m => ({ role: m.role, content: m.content }));
 
-      // Limit to 10 interactions
       const userMessagesCount = updatedProject.messages.filter(m => m.role === 'user').length;
       if (userMessagesCount >= 10) {
         const limitMessage: Message = {
@@ -163,7 +165,6 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         description: currentProject.description 
       });
 
-      // Check for success phrase
       const isComplete = response.includes("Generar Branding");
 
       const assistantMessage: Message = {
@@ -192,36 +193,27 @@ export function BrandProvider({ children }: { children: ReactNode }) {
 
     setIsGenerating(true);
     try {
-      // Generate context summary from chat for better branding
       const chatMessages = currentProject.messages.map(m => ({ role: m.role, content: m.content }));
       const chatContext = generateContextSummary(chatMessages);
 
-      console.log('🎯 Generating branding with context:', {
+      console.log('🎯 Generating branding', {
         brandName: currentProject.name,
-        description: currentProject.description,
-        chatContextLength: chatContext.length,
+        isMockMode
       });
 
-      // Progressive state for proposal-by-proposal rendering
       let progressiveProposals: any[] = [];
-
-      // Navigate to guide immediately when generation starts
-      // (the parent App will switch views once isGenerating = true)
 
       const branding = await generateBranding(
         currentProject.name,
         currentProject.description,
-        undefined, // industry
-        undefined, // targetAudience
-        chatContext, // Pass chat context
-        (step) => setGenerationStep(step), // onStep progress callback
+        undefined, 
+        undefined, 
+        chatContext, 
+        (step) => setGenerationStep(step),
         (proposal, index) => {
-          // ===== onProposalReady: emit proposal to UI immediately =====
-          console.log(`🟢 onProposalReady triggered for proposal ${index + 1}`);
           progressiveProposals = [...progressiveProposals];
           progressiveProposals[index] = proposal;
 
-          // Build a partial branding object with what we have so far
           const partialBranding = {
             brandName: currentProject.name,
             logo: progressiveProposals[0]?.logo || '',
@@ -231,16 +223,14 @@ export function BrandProvider({ children }: { children: ReactNode }) {
             typography: progressiveProposals[0]?.typography || null,
             icons: [],
             proposals: progressiveProposals.filter(Boolean),
-            brandStrategy: null,
-            finalBrandSystem: null,
           };
 
-          // Update the project state immediately so the UI can render
           setCurrentProject(prev => {
             if (!prev) return prev;
             return { ...prev, status: 'generating', branding: partialBranding as any };
           });
-        }
+        },
+        isMockMode // Nuevo parámetro para el modo mock
       );
 
       const updatedProject: BrandProject = {
@@ -252,7 +242,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
           {
             id: generateId(),
             role: 'assistant',
-            content: `¡He generado tu branding completo con 5 propuestas únicas! Cada propuesta incluye un logo profesional, paleta de 6 colores, 2 tipografías y 6 iconos concordantes. Explora las diferentes propuestas y elige la que mejor represente tu marca.`,
+            content: `¡He generado tu branding completo con 5 propuestas únicas! Explora las diferentes propuestas y elige la que mejor represente tu marca.`,
             timestamp: new Date(),
           },
         ],
@@ -263,16 +253,8 @@ export function BrandProvider({ children }: { children: ReactNode }) {
       setCurrentProject(updatedProject);
       await saveProject(updatedProject);
       setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
-
-      console.log('✅ Branding generation complete:', {
-        proposalsCount: branding.proposals.length,
-        hasLogo: !!branding.logo,
-        colorsCount: branding.colors.length,
-        iconsCount: branding.icons.length,
-      });
     } catch (error) {
       console.error('❌ Error generating branding:', error);
-      // Add error message
       const errorProject: BrandProject = {
         ...currentProject,
         messages: [
@@ -280,7 +262,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
           {
             id: generateId(),
             role: 'assistant',
-            content: `Lo siento, hubo un error al generar el branding. Por favor verifica tu API Key en Ajustes y vuelve a intentar.`,
+            content: `Lo siento, hubo un error al generar el branding.`,
             timestamp: new Date(),
           },
         ],
@@ -290,7 +272,7 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsGenerating(false);
     }
-  }, [currentProject]);
+  }, [currentProject, isMockMode]);
 
   const deleteProject = useCallback(async (id: string) => {
     await deleteProjectService(id);
@@ -312,7 +294,6 @@ export function BrandProvider({ children }: { children: ReactNode }) {
     setCurrentProject(updatedWithTimestamp);
     setProjects(prev => prev.map(p => p.id === project.id ? updatedWithTimestamp : p));
     
-    // Debounce network save to prevent UI freeze during rapid Mixer clicks
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => {
       saveProject(updatedWithTimestamp).catch(error => console.error("Error background saving project:", error));
@@ -336,6 +317,8 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         clearCurrentProject,
         updateProject,
         setGenerationStep,
+        isMockMode,
+        setIsMockMode
       }}
     >
       {children}
