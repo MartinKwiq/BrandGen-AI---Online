@@ -10,24 +10,30 @@ dotenv.config();
 const STORAGE_DIR = path.join(process.cwd(), "storage");
 fs.ensureDirSync(STORAGE_DIR);
 
-// Configuración de Supabase (Saneamiento)
+// Configuración de Supabase (Saneamiento robusto)
 const rawUrl = process.env.SUPABASE_URL || "";
 const rawKey = process.env.SUPABASE_KEY || "";
-const supabaseUrl = rawUrl.trim().replace(/['"]/g, '');
-const supabaseKey = rawKey.trim().replace(/['"]/g, '');
+const supabaseUrl = rawUrl.trim().replace(/['"]/g, '').replace(/;$/, '');
+const supabaseKey = rawKey.trim().replace(/['"]/g, '').replace(/;$/, '');
 
 // Inicializar cliente solo si las credenciales existen y parecen válidas
 let supabase = null;
 if (supabaseUrl && supabaseKey && supabaseUrl.startsWith("http")) {
     try {
-        supabase = createClient(supabaseUrl, supabaseKey);
-        console.log(`📡 Cliente Supabase configurado para: ${supabaseUrl.substring(0, 25)}...`);
+        supabase = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                persistSession: false
+            }
+        });
+        console.log(`📡 Cliente Supabase configurado con éxito.`);
     } catch (e) {
         console.error("❌ Error inicializando cliente Supabase:", e.message);
     }
 } else {
     console.warn("⚠️ ADVERTENCIA: Credenciales de Supabase ausentes o mal formateadas.");
-    console.log(`DEBUG: URL_OK=${!!supabaseUrl}, KEY_OK=${!!supabaseKey}, PROTOCOL_OK=${supabaseUrl.startsWith("http")}`);
+    if (process.env.NODE_ENV === 'production') {
+        console.log(`DEBUG: URL_OK=${!!supabaseUrl}, KEY_OK=${!!supabaseKey}`);
+    }
 }
 
 /**
@@ -145,36 +151,29 @@ export async function saveBrandingProject(project) {
         console.log(`💾 Persisting project ${project.id} to Supabase...`);
         
         // Saneado de datos: asegurar que branding sea un objeto JSON válido
-        // Si viene como string (raro pero posible), parsear.
-        let brandingData = project.branding || project;
-        if (typeof brandingData === 'string') {
-            try {
-                brandingData = JSON.parse(brandingData);
-            } catch (e) {
-                console.warn("⚠️ brandingData era string pero no JSON válido, usando objeto original");
-            }
-        }
+        let brandingData = project.branding || {};
+        
+        // Mapeo robusto: priorizar campos de project, fallback a brandingData
+        const projectToUpsert = {
+            id: project.id,
+            name: project.name || brandingData.brandName || "Sin Nombre",
+            description: project.description || brandingData.tagline || "",
+            industry: project.industry || brandingData.industry || "",
+            target_audience: project.target_audience || brandingData.targetAudience || "",
+            status: project.status || "completed",
+            proposals: project.proposals || brandingData.proposals || [],
+            images: { 
+                logo: brandingData.logo || null, 
+                icons: brandingData.icons || [] 
+            },
+            colors: project.colors || brandingData.colors || [],
+            typography: project.typography || brandingData.typography || {},
+            updated_at: timestamp
+        };
 
         const { data, error } = await supabase
             .from("brandgen_projects")
-            .upsert([
-                {
-                    id: project.id,
-                    name: project.name || brandingData.brandName || "Unnamed Project",
-                    description: project.description || brandingData.tagline || "",
-                    industry: project.industry || brandingData.industry || "",
-                    target_audience: project.target_audience || brandingData.targetAudience || "",
-                    status: project.status || "completed",
-                    proposals: project.proposals || brandingData.proposals || [],
-                    images: { 
-                        logo: brandingData.logo || null, 
-                        icons: brandingData.icons || [] 
-                    },
-                    colors: project.colors || brandingData.colors || [],
-                    typography: project.typography || brandingData.typography || {},
-                    updated_at: timestamp
-                }
-            ], { onConflict: 'id' });
+            .upsert([projectToUpsert], { onConflict: 'id' });
 
         if (error) {
             console.error("❌ SUPABASE UPSERT ERROR DETAILS:", JSON.stringify(error, null, 2));
