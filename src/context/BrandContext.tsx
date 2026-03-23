@@ -214,13 +214,21 @@ export function BrandProvider({ children }: { children: ReactNode }) {
           progressiveProposals = [...progressiveProposals];
           progressiveProposals[index] = proposal;
 
+          let fallbackTypo = progressiveProposals[0]?.typography || null;
+          if (fallbackTypo && fallbackTypo.titulo) {
+            fallbackTypo = {
+              heading: { name: fallbackTypo.titulo, fontFamily: `${fallbackTypo.titulo}, sans-serif`, usage: 'Títulos', googleFont: fallbackTypo.titulo.replace(/\s+/g, '+') },
+              body: { name: fallbackTypo.cuerpo, fontFamily: `${fallbackTypo.cuerpo}, sans-serif`, usage: 'Cuerpo', googleFont: fallbackTypo.cuerpo.replace(/\s+/g, '+') }
+            };
+          }
+
           const partialBranding = {
             brandName: currentProject.name,
             logo: progressiveProposals[0]?.logo || '',
             tagline: '',
             colors: progressiveProposals[0]?.colors || [],
             colorScheme: progressiveProposals[0]?.colorScheme || [],
-            typography: progressiveProposals[0]?.typography || null,
+            typography: fallbackTypo,
             icons: [],
             proposals: progressiveProposals.filter(Boolean),
           };
