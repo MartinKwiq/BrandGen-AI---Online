@@ -78,11 +78,24 @@ export async function saveProject(project) {
     const saveImage = async (base64Data, prefix) => {
         if (!base64Data || !base64Data.startsWith("data:image")) return base64Data;
         try {
-            const isSvg = base64Data.includes("image/svg+xml");
-            const extension = isSvg ? "svg" : "png";
-            const contentType = isSvg ? "image/svg+xml" : "image/png";
-            const base64Content = base64Data.split(",")[1];
-            const buffer = Buffer.from(base64Content, "base64");
+            let buffer;
+            let extension;
+            let contentType;
+
+            if (base64Data.startsWith("data:")) {
+                const isSvg = base64Data.includes("image/svg+xml");
+                extension = isSvg ? "svg" : "png";
+                contentType = isSvg ? "image/svg+xml" : "image/png";
+                const base64Content = base64Data.split(",")[1];
+                buffer = Buffer.from(base64Content, "base64");
+            } else if (base64Data.trim().startsWith("<svg")) {
+                extension = "svg";
+                contentType = "image/svg+xml";
+                buffer = Buffer.from(base64Data, "utf8");
+            } else {
+                return base64Data; // Ya es una URL HTTP o algo distinto
+            }
+
             const fileName = `${prefix}_${Date.now()}.${extension}`;
             
             // Guardado Local (Temporal en Render, permanente si se corre local)

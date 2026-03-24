@@ -1,0 +1,11 @@
+﻿[dotenv@17.2.4] injecting env (10) from backend\.env -- tip: ­ƒöä add secrets lifecycle management: https://dotenvx.com/ops
+=========================================
+­ƒöì DIAGN├ôSTICO DE BASE DE DATOS Y STORAGE
+=========================================
+
+1. Buscando proyectos guardados en la tabla 'brandgen_projects'...
+
+2. Revisando archivos en el bucket 'brandgen-storage'...
+
+=========================================
+Diagn├│stico finalizado.
