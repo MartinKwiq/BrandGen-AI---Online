@@ -387,7 +387,8 @@ Responde ESTRICTAMENTE en este formato JSON:
           { name: "Neutral Dark",  hex: "#0C4A6E", usage: "Texto" },
           { name: "Background",    hex: "#FFFFFF", usage: "Fondo" }
         ],
-        typography: { titulo: "Space Grotesk", cuerpo: "Inter" }
+        typography: { titulo: "Space Grotesk", cuerpo: "Inter" },
+        slogan: "Precisión y diseño para el futuro."
       },
       {
         name: "Bold Startup",
@@ -403,7 +404,8 @@ Responde ESTRICTAMENTE en este formato JSON:
           { name: "Neutral Dark",  hex: "#431407", usage: "Texto" },
           { name: "Background",    hex: "#0F0F0F", usage: "Fondo oscuro" }
         ],
-        typography: { titulo: "Syne", cuerpo: "DM Sans" }
+        typography: { titulo: "Syne", cuerpo: "DM Sans" },
+        slogan: "El impulso de la nueva era."
       },
       {
         name: "Premium Corporate",
@@ -419,7 +421,8 @@ Responde ESTRICTAMENTE en este formato JSON:
           { name: "Neutral Dark",  hex: "#3D3530", usage: "Texto" },
           { name: "Background",    hex: "#F5F0EA", usage: "Fondo" }
         ],
-        typography: { titulo: "Playfair Display", cuerpo: "Lora" }
+        typography: { titulo: "Playfair Display", cuerpo: "Lora" },
+        slogan: "Excelencia que deja huella."
       },
       {
         name: "Future AI",
@@ -435,7 +438,8 @@ Responde ESTRICTAMENTE en este formato JSON:
           { name: "Neutral Dark",  hex: "#E2DEFF", usage: "Texto claro" },
           { name: "Background",    hex: "#060612", usage: "Fondo" }
         ],
-        typography: { titulo: "Orbitron", cuerpo: "Rajdhani" }
+        typography: { titulo: "Orbitron", cuerpo: "Rajdhani" },
+        slogan: "Transformando la realidad."
       },
       {
         name: "Human Friendly",
@@ -451,7 +455,8 @@ Responde ESTRICTAMENTE en este formato JSON:
           { name: "Neutral Dark",  hex: "#14532D", usage: "Texto" },
           { name: "Background",    hex: "#FFFBF5", usage: "Fondo cálido" }
         ],
-        typography: { titulo: "Nunito", cuerpo: "Quicksand" }
+        typography: { titulo: "Nunito", cuerpo: "Quicksand" },
+        slogan: "Cercanía, valor y confianza."
       }
     ];
 
@@ -650,7 +655,7 @@ Responde ESTRICTAMENTE en este formato JSON:
         id: i + 1,
         name: safeStr(direction.name, `Propuesta ${i + 1}`),
         description: safeStr(direction.description, "Diseño de identidad visual"),
-        slogan: safeStr(direction.slogan, ""),
+        slogan: direction.slogan ? safeStr(direction.slogan, "") : `Transformando ideas en experiencias (${safeStr(direction.mood, "Moderno")}).`,
         mood: safeStr(direction.mood, "moderno"),
         logo: logoImageUrl,
         colorScheme: normalizedColors.map(c => c.hex),

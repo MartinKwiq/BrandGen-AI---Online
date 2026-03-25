@@ -61,16 +61,29 @@ export function ChatWidget({
     }
   }, [language]);
 
-  const toggleListening = () => {
+  const toggleListening = async () => {
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
     } else {
       if (recognitionRef.current) {
-        setIsListening(true);
-        recognitionRef.current.start();
+        try {
+          // Solicitud explícita para forzar el diálogo de permisos del navegador y sortear bloqueos fantasma
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+          
+          setIsListening(true);
+          try {
+              recognitionRef.current.start();
+          } catch (e) {
+              console.warn("Speech API ya estaba iniciado", e);
+          }
+        } catch (error) {
+          console.error("Micromphone permission blocked by browser:", error);
+          alert('⚠️ El navegador bloqueó el micrófono. \n\nPor favor haz clic en el ícono del "candado" 🔒 o "ajustes" junto a la barra de direcciones web arriba, y asegúrate de "Permitir" el uso del Micrófono.');
+          setIsListening(false);
+        }
       } else {
-        alert('Speech recognition is not supported in this browser.');
+        alert('Este navegador no soporta Reconocimiento de Voz. Usa Chrome o Edge.');
       }
     }
   };
