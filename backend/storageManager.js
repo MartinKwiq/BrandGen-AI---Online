@@ -245,7 +245,17 @@ export async function getProjects() {
                 .order('updated_at', { ascending: false });
 
             if (error) throw error;
-            return data;
+
+            // Retención de 10 días
+            const now = new Date();
+            const validProjects = (data || []).filter(p => {
+                const projectDate = new Date(p.updated_at || p.created_at || now);
+                const diffTime = Math.abs(now - projectDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays <= 10;
+            });
+
+            return validProjects;
         } catch (error) {
             console.error("❌ Error listando desde Supabase:", error.message);
         }
