@@ -18,3 +18,13 @@ services:
         sync: false
       - key: GOOGLE_IMAGEN_API_KEY
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        # IMPORTANTE: Esta debe ser la service_role key (sb_secret_...), NO la clave pública.
+        # Se obtiene en: Supabase Dashboard → Project Settings → API → service_role key
+        sync: false
+      - key: IMAGE_API_PRIMARY_KEY
+        sync: false
+      - key: IMAGE_API_FALLBACK_KEY
+        sync: false

@@ -12,7 +12,10 @@ fs.ensureDirSync(STORAGE_DIR);
 
 // Configuración de Supabase (Saneamiento robusto)
 const rawUrl = process.env.SUPABASE_URL || "";
-const rawKey = process.env.SUPABASE_KEY || "";
+// IMPORTANTE: El backend debe usar la service_role key (SUPABASE_SECRET_KEY),
+// NO la clave pública (SUPABASE_KEY). La service_role key tiene permisos para
+// escribir en tablas con Row Level Security (RLS) activo desde el servidor.
+const rawKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_KEY || "";
 const supabaseUrl = rawUrl.trim().replace(/['"]/g, '').replace(/;$/, '');
 const supabaseKey = rawKey.trim().replace(/['"]/g, '').replace(/;$/, '');
 
@@ -156,18 +159,20 @@ export async function saveProject(project) {
         }
     }
 
-    // 2. Persistir en Supabase (Prioridad) o Local
+    // 2. Persistir en Supabase (Prioridad)
     if (supabase) {
         try {
             await saveBrandingProject(project);
             console.log(`✅ Proyecto ${projectId} persistido en Supabase.`);
             return project;
         } catch (error) {
-            console.error("❌ Error persistiendo en Supabase, reintentando local...", error.message);
+            console.error("❌ Error persistiendo en Supabase", error.message);
+            // Lanzas error para romper el enganche de silencio, forzando la alerta roja gráfica en el Frontend
+            throw new Error(`MALA CONFIGURACIÓN DE SUPABASE: ${error.message} \n\n¡Por favor asegúrate de haber creado la tabla SQL en Supabase y el bucket de imágenes correctamente!`);
         }
     }
 
-    // Fallback: Guardar localmente (como antes)
+    // Fallback: Guardar localmente solo si Supabase NO ESTABA CONFIGURADO (sin variables de entorno)
     const projectFilePath = path.join(projectDir, "project.json");
     await fs.writeJson(projectFilePath, {
         ...project,
